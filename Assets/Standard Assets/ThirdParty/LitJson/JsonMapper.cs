@@ -1,4 +1,4 @@
-#region Header
+﻿#region Header
 /*
  * The authors disclaim copyright to this source code.
  * For more details, see the COPYING file included with this distribution.
@@ -18,7 +18,7 @@ namespace UnityLitJson {
 internal struct PropertyMetadata {
 	public Type Type { get; set; }
 	public MemberInfo Info { get; set; }
-	public JsonIgnoreWhen Ignore { get; set; }
+	public bool Ignore { get; set; }
 	public string Alias { get; set; }
 	public bool IsField { get; set; }
 	public bool Include { get; set; }
@@ -110,7 +110,6 @@ public class JsonMapper {
 
 		RegisterBaseExporters();
 		RegisterBaseImporters();
-
         UnityTypeBindings.Register();
 	}
 
@@ -148,13 +147,9 @@ public class JsonMapper {
 			data.IsDictionary = true;
 		}
 		data.Properties = new Dictionary<string, PropertyMetadata>();
-		HashSet<string> ignoredMembers = new HashSet<string>();
-		object[] memberAttrs = type.GetCustomAttributes(typeof(JsonIgnoreMember), true);
-		foreach (JsonIgnoreMember memberAttr in memberAttrs) {
-			ignoredMembers.UnionWith(memberAttr.Members);
-		}
+		
 		// Get all kinds of declared properties
-		BindingFlags pflags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
+		BindingFlags pflags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 		foreach (PropertyInfo pinfo in type.GetProperties(pflags)) {
 			if (pinfo.Name == "Item") {
 				ParameterInfo[] parameters = pinfo.GetIndexParameters();
@@ -179,9 +174,7 @@ public class JsonMapper {
 			pdata.Type = pinfo.PropertyType;
 			object[] ignoreAttrs = pinfo.GetCustomAttributes(typeof(JsonIgnore), true).ToArray();
 			if (ignoreAttrs.Length > 0) {
-				pdata.Ignore = ((JsonIgnore)ignoreAttrs[0]).Usage;
-			} else if (ignoredMembers.Contains(pinfo.Name)) {
-				pdata.Ignore = JsonIgnoreWhen.Serializing | JsonIgnoreWhen.Deserializing;
+				pdata.Ignore = true;
 			}
 			object[] aliasAttrs = pinfo.GetCustomAttributes(typeof(JsonAlias), true).ToArray();
 			if (aliasAttrs.Length > 0) {
@@ -207,7 +200,7 @@ public class JsonMapper {
 			}
 		}
 		// Get all kinds of declared fields
-		BindingFlags fflags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
+		BindingFlags fflags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 		foreach (FieldInfo finfo in type.GetFields(fflags)) {
 			// If the field isn't public and doesn't have an [Include] attribute, skip it
 			if (!finfo.IsPublic && finfo.GetCustomAttributes(typeof(JsonInclude), true).Count() == 0) {
@@ -219,9 +212,7 @@ public class JsonMapper {
 			pdata.Type = finfo.FieldType;
 			object[] ignoreAttrs = finfo.GetCustomAttributes(typeof(JsonIgnore), true).ToArray();
 			if (ignoreAttrs.Length > 0) {
-				pdata.Ignore = ((JsonIgnore)ignoreAttrs[0]).Usage;
-			} else if (ignoredMembers.Contains(finfo.Name)) {
-				pdata.Ignore = JsonIgnoreWhen.Serializing | JsonIgnoreWhen.Deserializing;
+				pdata.Ignore = true;
 			}
 			object[] aliasAttrs = finfo.GetCustomAttributes(typeof(JsonAlias), true).ToArray();
 			if (aliasAttrs.Length > 0) {
@@ -400,22 +391,30 @@ public class JsonMapper {
 				done = true;
 			} else {
 				property = (string)reader.Value;
-				if (reader.TypeHinting && property == reader.HintTypeName) {
-					reader.Read();
-					string typeName = (string)reader.Value;
-					reader.Read();
-					if ((string)reader.Value == reader.HintValueName) {
-						valueType = Type.GetType(typeName);
-						object value = ReadValue(valueType, reader);
-						reader.Read();
-						if (reader.Token != JsonToken.ObjectEnd) {
-							throw new JsonException(string.Format("Invalid type hinting object, has too many properties: {0}...", reader.Token));
-						}
-						return value;
-					} else {
-						throw new JsonException(string.Format("Expected \"{0}\" property for type hinting but instead got \"{1}\"", reader.HintValueName, reader.Value));
-					}
-				}
+				if (reader.TypeHinting && property == reader.HintTypeName)
+				{
+                    valueType = reader.ReadType();
+                    reader.Read();
+                    property = (string)reader.Value;
+                    //reader.Read();
+                    //string typeName = (string)reader.Value;
+                    //reader.Read();
+                    //if ((string)reader.Value == reader.HintValueName)
+                    //{
+                    //    valueType = Type.GetType(typeName);
+                    //    object value = ReadValue(valueType, reader);
+                    //    reader.Read();
+                    //    if (reader.Token != JsonToken.ObjectEnd)
+                    //    {
+                    //        throw new JsonException(string.Format("Invalid type hinting object, has too many properties: {0}...", reader.Token));
+                    //    }
+                    //    return value;
+                    //}
+                    //else
+                    //{
+                    //    throw new JsonException(string.Format("Expected \"{0}\" property for type hinting but instead got \"{1}\"", reader.HintValueName, reader.Value));
+                    //}
+                }
 			}
 			// If there's a custom importer that fits, use to create a JsonData type instead.
 			// Once the object is deserialzied, it will be invoked to create the actual converted object.
@@ -439,7 +438,8 @@ public class JsonMapper {
 				PropertyMetadata pdata;
 				if (tdata.Properties.TryGetValue(property, out pdata)) {
 					// Don't deserialize a field or property that has a JsonIgnore attribute with deserialization usage.
-					if ((pdata.Ignore & JsonIgnoreWhen.Deserializing) > 0) {
+                    if (pdata.Ignore)
+                    {
 						ReadSkip(reader);
 						continue;
 					}
@@ -651,16 +651,16 @@ public class JsonMapper {
 			Type elemType = arr.GetType().GetElementType();
 			foreach (object elem in arr) {
 				// if the collection contains polymorphic elements, we need to include type information for deserialization
-				if (writer.TypeHinting && elem != null & elem.GetType() != elemType) {
-					writer.WriteObjectStart();
-					writer.WritePropertyName(writer.HintTypeName);
-					writer.Write(elem.GetType().FullName);
-					writer.WritePropertyName(writer.HintValueName);
-					WriteValue(elem, writer, privateWriter, depth + 1);
-					writer.WriteObjectEnd();
-				} else {
+				//if (writer.TypeHinting && elem != null & elem.GetType() != elemType) {
+				//	writer.WriteObjectStart();
+				//	writer.WritePropertyName(writer.HintTypeName);
+				//	writer.Write(elem.GetType().FullName);
+				//	writer.WritePropertyName(writer.HintValueName);
+				//	WriteValue(elem, writer, privateWriter, depth + 1);
+				//	writer.WriteObjectEnd();
+				//} else {
 					WriteValue(elem, writer, privateWriter, depth + 1);    
-				}
+				//}
 			}
 			writer.WriteArrayEnd();
 			return;
@@ -676,16 +676,16 @@ public class JsonMapper {
 			}
 			foreach (object elem in list) {
 				// if the collection contains polymorphic elements, we need to include type information for deserialization
-				if (writer.TypeHinting && elem != null && elem.GetType() != elemType) {
-					writer.WriteObjectStart();
-					writer.WritePropertyName(writer.HintTypeName);
-					writer.Write(elem.GetType().AssemblyQualifiedName);
-					writer.WritePropertyName(writer.HintValueName);
-					WriteValue(elem, writer, privateWriter, depth + 1);
-					writer.WriteObjectEnd();
-				} else {
+				//if (writer.TypeHinting && elem != null && elem.GetType() != elemType) {
+				//	writer.WriteObjectStart();
+				//	writer.WritePropertyName(writer.HintTypeName);
+				//	writer.Write(elem.GetType().AssemblyQualifiedName);
+				//	writer.WritePropertyName(writer.HintValueName);
+				//	WriteValue(elem, writer, privateWriter, depth + 1);
+				//	writer.WriteObjectEnd();
+				//} else {
 					WriteValue(elem, writer, privateWriter, depth + 1);    
-				}
+				//}
 			}
 			writer.WriteArrayEnd();
 			return;
@@ -702,16 +702,16 @@ public class JsonMapper {
 			foreach (DictionaryEntry entry in dict) {
 				writer.WritePropertyName((string)entry.Key);
 				// if the collection contains polymorphic elements, we need to include type information for deserialization
-				if (writer.TypeHinting && entry.Value != null && entry.Value.GetType() != elemType) {
-					writer.WriteObjectStart();
-					writer.WritePropertyName(writer.HintTypeName);
-					writer.Write(entry.Value.GetType().AssemblyQualifiedName);
-					writer.WritePropertyName(writer.HintValueName);
+				//if (writer.TypeHinting && entry.Value != null && entry.Value.GetType() != elemType) {
+				//	writer.WriteObjectStart();
+				//	writer.WritePropertyName(writer.HintTypeName);
+				//	writer.Write(entry.Value.GetType().AssemblyQualifiedName);
+				//	writer.WritePropertyName(writer.HintValueName);
+				//	WriteValue(entry.Value, writer, privateWriter, depth + 1);
+				//	writer.WriteObjectEnd();
+				//} else {
 					WriteValue(entry.Value, writer, privateWriter, depth + 1);
-					writer.WriteObjectEnd();
-				} else {
-					WriteValue(entry.Value, writer, privateWriter, depth + 1);
-				}
+				//}
 			}
 			writer.WriteObjectEnd();
 			return;
@@ -739,6 +739,11 @@ public class JsonMapper {
 		// Okay, it looks like the input should be exported as an object
 		ObjectMetadata tdata = AddObjectMetadata(objType);
 		writer.WriteObjectStart();
+        //在Json的第一个字段前插入类型标识
+	    if (writer.TypeHinting)
+	    {
+	        writer.WriteType(objType);
+	    }
 		foreach (string property in tdata.Properties.Keys) {
 			PropertyMetadata pdata = tdata.Properties[property];
 			// Don't serialize soft aliases (which get added to ObjectMetadata.Properties twice).
@@ -746,7 +751,8 @@ public class JsonMapper {
 				continue;
 			}
 			// Don't serialize a field or property with the JsonIgnore attribute with serialization usage
-			if ((pdata.Ignore & JsonIgnoreWhen.Serializing) > 0) {
+            if (pdata.Ignore)
+            {
 				continue;
 			}
 			if (pdata.IsField) {
@@ -757,49 +763,55 @@ public class JsonMapper {
 					writer.WritePropertyName(info.Name);
 				}
 				object value = info.GetValue(obj);
-				if (writer.TypeHinting && value != null && info.FieldType != value.GetType()) {
-					// the object stored in the field might be a different type that what was declared, need type hinting
-					writer.WriteObjectStart();
-					writer.WritePropertyName(writer.HintTypeName);
-					writer.Write(value.GetType().AssemblyQualifiedName);
-					writer.WritePropertyName(writer.HintValueName);
+				//if (writer.TypeHinting && value != null && info.FieldType != value.GetType()) {
+				//	// the object stored in the field might be a different type that what was declared, need type hinting
+				//	writer.WriteObjectStart();
+				//	writer.WritePropertyName(writer.HintTypeName);
+				//	writer.Write(value.GetType().AssemblyQualifiedName);
+				//	writer.WritePropertyName(writer.HintValueName);
+				//	WriteValue(value, writer, privateWriter, depth + 1);
+				//	writer.WriteObjectEnd();
+				//} else {
 					WriteValue(value, writer, privateWriter, depth + 1);
-					writer.WriteObjectEnd();
-				} else {
-					WriteValue(value, writer, privateWriter, depth + 1);
-				}
+				//}
 			}
-			else {
-				PropertyInfo info = (PropertyInfo)pdata.Info;
-				if (info.CanRead) {
-					if (pdata.Alias != null) {
-						writer.WritePropertyName(pdata.Alias);
-					} else {
-						writer.WritePropertyName(info.Name);
-					}
-					object value = info.GetValue(obj, null);
-					if (writer.TypeHinting && value != null && info.PropertyType != value.GetType()) {
-						// the object stored in the property might be a different type that what was declared, need type hinting
-						writer.WriteObjectStart();
-						writer.WritePropertyName(writer.HintTypeName);
-						writer.Write(value.GetType().AssemblyQualifiedName);
-						writer.WritePropertyName(writer.HintValueName);
-						WriteValue(value, writer, privateWriter, depth + 1);
-						writer.WriteObjectEnd();
-					} else {
-						WriteValue(value, writer, privateWriter, depth + 1);
-					}
-				}
-			}
+            //暂时去除类属性的序列化操作,因为静态数据里面带有不需要序列化的属性
+			//else {
+			//	PropertyInfo info = (PropertyInfo)pdata.Info;
+			//	if (info.CanRead) {
+			//		if (pdata.Alias != null) {
+			//			writer.WritePropertyName(pdata.Alias);
+			//		} else {
+			//			writer.WritePropertyName(info.Name);
+			//		}
+			//		object value = info.GetValue(obj, null);
+			//		//if (writer.TypeHinting && value != null && info.PropertyType != value.GetType()) {
+			//		//	// the object stored in the property might be a different type that what was declared, need type hinting
+			//		//	writer.WriteObjectStart();
+			//		//	writer.WritePropertyName(writer.HintTypeName);
+			//		//	writer.Write(value.GetType().AssemblyQualifiedName);
+			//		//	writer.WritePropertyName(writer.HintValueName);
+			//		//	WriteValue(value, writer, privateWriter, depth + 1);
+			//		//	writer.WriteObjectEnd();
+			//		//} else {
+			//			WriteValue(value, writer, privateWriter, depth + 1);
+			//		//}
+			//	}
+			//}
 		}
 		writer.WriteObjectEnd();
 	}
 
 	public static string ToJson(object obj) {
-		JsonWriter writer = new JsonWriter();
-		WriteValue(obj, writer, true, 0);
-		return writer.ToString();
+        return ToJson (obj,false);
 	}
+
+    public static string ToJson(object obj,bool prettyPrint) {
+        JsonWriter writer = new JsonWriter();
+        writer.PrettyPrint = prettyPrint;
+        WriteValue(obj, writer, true, 0);
+        return writer.ToString();
+    }
 
 	public static void ToJson(object obj, JsonWriter writer) {
 		WriteValue(obj, writer, false, 0);
@@ -833,10 +845,24 @@ public class JsonMapper {
 		return (T)ReadValue(typeof(T), jsonReader);
 	}
 
-	public static T ToObject<T>(string json) {
-		JsonReader reader = new JsonReader(json);
-		return (T)ReadValue(typeof(T), reader);
+    public static T ToObject<T>(string json)
+    {
+		if (string.IsNullOrEmpty(json))
+		{
+			return default(T);
+		}
+		else
+		{
+			JsonReader reader = new JsonReader(json);
+			return (T)ReadValue(typeof(T), reader);
+		}
 	}
+
+    public static object ToObject(string json, Type t)
+    {
+        JsonReader reader = new JsonReader(json);
+        return ReadValue(t, reader);
+    }
 
 	public static IJsonWrapper ToWrapper(WrapperFactory factory, JsonReader reader) {
 		return ReadValue(factory, reader);

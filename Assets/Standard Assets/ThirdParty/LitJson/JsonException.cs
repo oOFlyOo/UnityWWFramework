@@ -1,4 +1,4 @@
-#region Header
+﻿#region Header
 /*
  * The authors disclaim copyright to this source code.
  * For more details, see the COPYING file included with this distribution.
@@ -10,7 +10,7 @@ using System;
 namespace UnityLitJson {
 
 	/// <summary>
-	/// Base class throwed by LitJSON when a parsing error occurs.
+	/// Base class throwed by LitJson when a parsing error occurs.
 	/// </summary>
 	public class JsonException : Exception {
 

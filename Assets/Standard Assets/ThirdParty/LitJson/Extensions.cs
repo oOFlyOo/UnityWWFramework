@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-namespace UnityLitJson.Extensions {
+namespace UnityLitJson {
 
 	public static class Extensions {
 

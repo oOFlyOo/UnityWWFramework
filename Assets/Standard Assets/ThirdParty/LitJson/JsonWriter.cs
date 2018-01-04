@@ -1,4 +1,4 @@
-#region Header
+﻿#region Header
 /*
 * The authors disclaim copyright to this source code.
 * For more details, see the COPYING file included with this distribution.
@@ -52,9 +52,11 @@ public class JsonWriter {
 	public bool Validate { get; set; }
 	public bool TypeHinting { get; set; }
 	public string HintTypeName { get; set; }
-	public string HintValueName { get; set; }
+	//public string HintValueName { get; set; }
+    
+    public Func<Type, int> TypeWriter { get; set; }
 
-	public TextWriter TextWriter { get; private set; }
+    public TextWriter TextWriter { get; private set; }
 
 	static JsonWriter() {
 		numberFormat = NumberFormatInfo.InvariantInfo;
@@ -109,12 +111,13 @@ public class JsonWriter {
 				throw new JsonException("Can't add a property here");
 			}
 			break;
-		case Condition.Value:
-			if (!context.InArray &&
-			   (!context.InObject || !context.ExpectingValue)) {
-				throw new JsonException("Can't add a value here");
-			}
-			break;
+        // NV Allow for Pure Values
+        //case Condition.Value:
+        //    if (!context.InArray &&
+        //       (!context.InObject || !context.ExpectingValue)) {
+        //        throw new JsonException("Can't add a value here");
+        //    }
+        //    break;
 		}
 	}
 
@@ -127,8 +130,8 @@ public class JsonWriter {
 		Validate = true;
 
 		TypeHinting = false;
-		HintTypeName = "__type__";
-		HintValueName = "__value__";
+		HintTypeName = "_t";
+		//HintValueName = "_v";
 
 		ctxStack = new Stack<WriterContext>();
 		context = new WriterContext();
@@ -163,7 +166,12 @@ public class JsonWriter {
 		TextWriter.Write(str);
 	}
 
-	private void PutNewline(bool addComma = true) {
+		
+	private void PutNewline() {
+			PutNewline (true);
+	}
+
+	private void PutNewline(bool addComma) {
 		if (addComma && !context.ExpectingValue && context.Count > 1) {
 			TextWriter.Write(',');
 		}
@@ -204,9 +212,10 @@ public class JsonWriter {
 				continue;
 			}
 			// Default, turn into a \uXXXX sequence
-			IntToHex ((int)str[i], hexSeq);
-			TextWriter.Write("\\u");
-			TextWriter.Write(hexSeq);
+			//IntToHex ((int)str[i], hexSeq);
+			//TextWriter.Write("\\u");
+			//TextWriter.Write(hexSeq);
+			TextWriter.Write(str[i]);
 		}
 		TextWriter.Write('"');
 	}
@@ -351,6 +360,20 @@ public class JsonWriter {
 		}
 		context.ExpectingValue = true;
 	}
-}
+
+        public void WriteType(Type type)
+        {
+            WritePropertyName(HintTypeName);
+            if (TypeWriter != null)
+            {
+                int typeId = TypeWriter(type);
+                Write(typeId);
+            }
+            else
+            {
+                Write(type.AssemblyQualifiedName);
+            }
+        }
+    }
 
 }

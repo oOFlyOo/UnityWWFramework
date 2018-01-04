@@ -2,9 +2,7 @@
 
 using UnityEngine;
 using System;
-using System.Collections;
 
-using UnityLitJson.Extensions;
 
 namespace UnityLitJson {
 

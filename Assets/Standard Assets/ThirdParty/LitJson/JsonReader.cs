@@ -57,14 +57,16 @@ public class JsonReader {
 	public bool SkipNonMembers { get; set; }
 	public bool TypeHinting { get; set; }
 	public string HintTypeName { get; set; }
-	public string HintValueName { get; set; }
+	//public string HintValueName { get; set; }
 
 	public bool EndOfInput { get; private set; }
 	public bool EndOfJson { get; private set; }
 	public JsonToken Token { get; private set; }
 	public object Value { get; private set; }
 
-	public JsonReader(string json) : this(new StringReader(json), true) {
+    public Func<object,Type> TypeReader { get; set; }
+
+    public JsonReader(string json) : this(new StringReader(json), true) {
 	}
 
 	public JsonReader(TextReader reader) : this(reader, false) {
@@ -93,9 +95,9 @@ public class JsonReader {
 		readerIsOwned = owned;
 
 		TypeHinting = false;
-		HintTypeName = "__type__";
-		HintValueName = "__value__";
-	}
+        HintTypeName = "_t";
+        //HintValueName = "_v";
+    }
 
 	static JsonReader() {
 		// Populate parse table
@@ -327,6 +329,16 @@ public class JsonReader {
 		}
 		reader = null;
 	}
+
+    public Type ReadType()
+    {
+        Read();
+        if (TypeReader != null)
+            return TypeReader(Value);
+
+        string typeName = (string)Value;
+        return Type.GetType(typeName);
+    }
 
 	public bool Read() {
 		if (EndOfInput) {

@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEditor;
 
-namespace WWFramework.EditorUI
+namespace WWFramework.Editor.UI
 {
     public abstract class BaseEditorWindow : EditorWindow
     {

@@ -1,10 +1,44 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace WWFramework.Extension
 {
     public static class CollectionExtension
     {
+        [Obsolete("只是一个模板，必须单独每个写")]
+        public sealed class EnumComparer<T> : IEqualityComparer<T> where T: IComparable, IConvertible
+        {
+            private static EnumComparer<T> _instance;
+
+            public static EnumComparer<T> Instance
+            {
+                get
+                {
+                    if (_instance == null)
+                    {
+                        _instance = new EnumComparer<T>();
+                    }
+                    return _instance;
+                }
+            }
+
+            private EnumComparer()
+            {
+                
+            }
+
+            public bool Equals(T x, T y)
+            {
+                return x.CompareTo(y) == 0;
+            }
+
+            public int GetHashCode(T obj)
+            {
+                return obj.ToInt32(null);
+            }
+        }
+
         [Obsolete("Unity 5.6 开始不再有 GC")]
         public static void Foreach<TKey>(this List<TKey> list, Action<TKey> callback)
         {

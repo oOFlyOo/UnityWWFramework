@@ -24,7 +24,7 @@ namespace WWFramework.Util
 
             private bool _timeScale;
 
-            protected Action<float> _onUpdated;
+            protected Action<float> _onUpdate;
 
             public string Name
             {
@@ -36,13 +36,13 @@ namespace WWFramework.Util
                 get { return _isValid; }
             }
 
-            public Task(string name, bool timeScale, Action<float> onUpdated)
+            public Task(string name, bool timeScale, Action<float> onUpdate)
             {
                 _isValid = true;
 
                 _name = name;
                 _timeScale = timeScale;
-                _onUpdated = onUpdated;
+                _onUpdate = onUpdate;
             }
 
             protected float GetRealTime(float deltaTime, float unscaledDeltaTime)
@@ -53,7 +53,7 @@ namespace WWFramework.Util
 
             public virtual void PassTime(float deltaTime, float unscaledDeltaTime)
             {
-                if (_onUpdated != null)
+                if (_onUpdate != null)
                 {
                     OnUpdate(GetRealTime(deltaTime, unscaledDeltaTime));
                 }
@@ -61,7 +61,7 @@ namespace WWFramework.Util
 
             protected virtual void OnUpdate(float realTime)
             {
-                _onUpdated(realTime);
+                _onUpdate(realTime);
             }
 
             public bool Cancel()
@@ -78,7 +78,7 @@ namespace WWFramework.Util
             private float _interval;
             private float _lastActiveTime;
 
-            public CdTask(string name, bool timeScale, Action<float> onUpdated, float interval) : base(name, timeScale, onUpdated)
+            public CdTask(string name, bool timeScale, Action<float> onUpdate, float interval) : base(name, timeScale, onUpdate)
             {
                 _lastActiveTime = 0;
 
@@ -102,7 +102,7 @@ namespace WWFramework.Util
             private float _remainTime;
             private Action _onFinshed;
 
-            public DuractionTask(string name, bool timeScale, Action<float> onUpdated, float duraction, float remainTime, Action onFinshed) : base(name, timeScale, onUpdated, duraction)
+            public DuractionTask(string name, bool timeScale, Action<float> onUpdate, float duraction, float remainTime, Action onFinshed) : base(name, timeScale, onUpdate, duraction)
             {
                 _remainTime = remainTime;
                 _onFinshed = onFinshed;
@@ -163,8 +163,7 @@ namespace WWFramework.Util
                 {
                     _taskList[i].PassTime(deltaTime, unscaledDeltaTime);
                 }
-
-                if (!_taskList[i].IsValid)
+                else
                 {
                     _taskList.RemoveAt(i);
                 }

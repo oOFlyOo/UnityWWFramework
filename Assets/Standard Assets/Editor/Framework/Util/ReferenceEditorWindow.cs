@@ -1,8 +1,7 @@
-﻿
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using WWFramework.Editor.Helper;
 using WWFramework.Editor.UI;
 
 namespace WWFramework.Editor.Util
@@ -36,27 +35,8 @@ namespace WWFramework.Editor.Util
         private void ShowReverseDependences()
         {
             var selections = GetSelections();
-            var paths = selections.Select(obj => AssetDatabase.GetAssetPath(obj)).ToList();
-            var objPaths = new List<string>();
-
-            foreach (var dependency in AssetDatabase.GetDependencies("Assets/Test/Scenes"))
-            {
-                Debug.Log(dependency);
-            }
-
-            foreach (var assetPath in AssetDatabase.GetAllAssetPaths())
-            {
-                foreach (var dependency in AssetDatabase.GetDependencies(assetPath))
-                {
-                    foreach (var path in paths)
-                    {
-                        if (dependency.Contains(path))
-                        {
-                            objPaths.Add(assetPath);   
-                        }
-                    }
-                }
-            }
+            var paths = selections.Select(obj => AssetDatabase.GetAssetPath(obj)).ToArray();
+            var objPaths = EditorHelper.GetReverseDependencies(paths);
 
             SelectingEditorWindow.Show(objPaths.ConvertAll(input => AssetDatabase.LoadMainAssetAtPath(input)), "反向引用：");
         }

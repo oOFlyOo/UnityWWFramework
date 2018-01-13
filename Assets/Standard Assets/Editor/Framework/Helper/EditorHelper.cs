@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Reflection;
 using UnityEditor;
+using WWFramework.Helper;
 
 namespace WWFramework.Editor.Helper
 {
@@ -11,7 +14,7 @@ namespace WWFramework.Editor.Helper
 
         public static byte[] HttpRequest(string url, int timeOut = 3000)
         {
-            var request = HttpWebRequest.Create(url);
+            var request = WebRequest.Create(url);
             request.Timeout = timeOut;
 
             var response = request.GetResponse();
@@ -42,6 +45,42 @@ namespace WWFramework.Editor.Helper
             method.Invoke(new object(), null);
         }
 
+
+        public static bool IsMetaFile(string path)
+        {
+            return path.EndsWith(".meta");
+        }
+
+
+        public static List<string> GetReverseDependencies(string[] paths, string[] searchPaths = null)
+        {
+            var includeList = new List<string>();
+            searchPaths = searchPaths ?? new[] {IOHelper.CurrentDirectory};
+            foreach (var searchPath in searchPaths)
+            {
+                foreach (var file in Directory.GetFiles(searchPath, "*", SearchOption.AllDirectories))
+                {
+                    if (IsMetaFile(file))
+                    {
+                        continue;
+                    }
+
+                    var relativePath = IOHelper.GetRelativePath(file.Replace("\\", "/"));
+                    foreach (var dependency in AssetDatabase.GetDependencies(relativePath))
+                    {
+                        foreach (var path in paths)
+                        {
+                            if (dependency.Contains(path))
+                            {
+                                includeList.Add(relativePath);
+                            }
+                        }
+                    }
+                }
+            }
+
+            return includeList;
+        }
         #endregion
 
         #region 提示的辅助

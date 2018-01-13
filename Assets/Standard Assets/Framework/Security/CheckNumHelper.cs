@@ -1,11 +1,46 @@
 ﻿
+using System;
 using System.Security.Cryptography;
+using System.Text;
 using ICSharpCode.SharpZipLib.Checksums;
 
 namespace WWFramework.Security
 {
     public static class CheckNumHelper
     {
+        #region 常用编码操作
+        public static string ConvertBytesToBase64(byte[] datas)
+        {
+            return Convert.ToBase64String(datas);
+        }
+
+        public static byte[] ConvertBase64ToBytes(string str)
+        {
+            return Convert.FromBase64String(str);
+        }
+
+        public static string ConvertBytesToUTF8(byte[] datas)
+        {
+            return Encoding.UTF8.GetString(datas);
+        }
+
+        public static byte[] ConvertUTF8ToBytes(string str)
+        {
+            return Encoding.UTF8.GetBytes(str);
+        }
+
+        public static string ConvertBytesToDefault(byte[] datas)
+        {
+            return Encoding.Default.GetString(datas);
+        }
+
+        public static byte[] ConvertDefaultToBytes(string str)
+        {
+            return Encoding.Default.GetBytes(str);
+        }
+
+        #endregion
+
         #region CRC
         private static Crc32 _crc;
 

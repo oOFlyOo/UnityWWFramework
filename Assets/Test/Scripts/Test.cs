@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using UnityEngine;
+using WWFramework.Util;
 
 public class Test: MonoBehaviour
 {
@@ -7,6 +8,20 @@ public class Test: MonoBehaviour
     {
         StartCoroutine(Coroutine());
         StartCoroutine(Coroutine1());
+
+        for (int i = 0; i < 999; i++)
+        {
+            ThreadManager.Instance.AddTask(Log, null);
+        }
+    }
+
+
+    private void Log()
+    {
+        for (int i = 0; i < 999; i++)
+        {
+            Debug.Log(i);
+        }
     }
 
 

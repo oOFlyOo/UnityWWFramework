@@ -25,7 +25,7 @@ namespace WWFramework.Editor.Util
         }
 
 
-        [MenuItem("Util/ScriptableObject/Window")]
+        [MenuItem("WWFramework/ScriptableObject/Window")]
         public static ScriptableObjectEditorWindow GetWindow()
         {
             return GetWindow<ScriptableObjectEditorWindow>();

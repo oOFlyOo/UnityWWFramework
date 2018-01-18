@@ -75,13 +75,68 @@ namespace WWFramework.Editor.Helper
 
             return scriptList;
         }
+
+
+        public static List<GameObject> FindMissingReferences(List<GameObject> checksObjects)
+        {
+            var resultList = new List<GameObject>();
+
+            foreach (var checksObject in checksObjects)
+            {
+                FindMissingReferences(checksObject, resultList);
+            }
+
+            return resultList;
+        }
+
+        public static void FindMissingReferences(GameObject go, List<GameObject> resultList)
+        {
+            foreach (var com in go.GetComponents<Component>())
+            {
+                if (com == null)
+                {
+                    resultList.Add(go);
+
+                    break;
+                }
+
+                var result = false;
+                var so = new SerializedObject(com);
+                var sp = so.GetIterator();
+                while (sp.NextVisible(true))
+                {
+                    if (sp.propertyType == SerializedPropertyType.ObjectReference)
+                    {
+                        if (sp.objectReferenceValue == null
+                            && sp.objectReferenceInstanceIDValue != 0)
+                        {
+                            resultList.Add(com.gameObject);
+                            result = true;
+
+                            break;
+                        }
+                    }
+                }
+
+                if (result)
+                {
+                    break;
+                }
+            }
+
+            foreach (Transform trans in go.transform)
+            {
+                FindMissingReferences(trans.gameObject, resultList);
+            }
+        }
+
         #endregion
 
 
         #region 资源创建
-        public static T CreateScriptableObjectAsset<T>(string path) where T: ScriptableObject
+        public static T CreateScriptableObjectAsset<T>(string path) where T : ScriptableObject
         {
-            return CreateScriptableObjectAsset(typeof (T), path) as T;
+            return CreateScriptableObjectAsset(typeof(T), path) as T;
         }
 
         public static ScriptableObject CreateScriptableObjectAsset(Type type, string path)

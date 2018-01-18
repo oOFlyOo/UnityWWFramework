@@ -135,5 +135,20 @@ namespace WWFramework.Helper
 
             tex.SetPixels(pixels);
         }
+
+
+        public static Texture GetMiMapTexture(Texture2D source, int mipLevel)
+        {
+            var mipMapTex = new Texture2D(source.width, source.height, source.format, true);
+            mipMapTex.SetPixels(source.GetPixels());
+            mipMapTex.Apply();
+            var pixels = mipMapTex.GetPixels(mipLevel);
+
+            var result = new Texture2D(source.width / (int)Mathf.Pow(2, mipLevel), source.height / (int)Mathf.Pow(2, mipLevel), source.format, false);
+            result.SetPixels(pixels);
+            result.Apply();
+
+            return result;
+        }
     }
 }

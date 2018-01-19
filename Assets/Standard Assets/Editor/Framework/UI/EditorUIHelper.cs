@@ -133,6 +133,18 @@ namespace WWFramework.Editor.UI
         }
 
 
+        public static void BeginChangeCheck()
+        {
+            EditorGUI.BeginChangeCheck();
+        }
+
+
+        public static bool EndChangeCheck()
+        {
+            return EditorGUI.EndChangeCheck();
+        }
+
+
         public static void TitleField(string title, string label = null)
         {
             EditorGUILayout.LabelField(title, label);

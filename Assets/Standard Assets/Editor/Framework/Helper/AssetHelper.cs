@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using UnityEditor;
 using UnityEngine;
+using WWFramework.Reflection;
 using Object = UnityEngine.Object;
 
 namespace WWFramework.Editor.Helper
@@ -151,8 +152,8 @@ namespace WWFramework.Editor.Helper
         public static void GetTextureSize(TextureImporter importer, out int width, out int height)
         {
             object[] args = new object[2] { 0, 0 };
-            var method = typeof(TextureImporter).GetMethod("GetWidthAndHeight", BindingFlags.NonPublic | BindingFlags.Instance);
-            method.Invoke(importer, args);
+
+            importer.GetType().InvokeMethod(importer, "GetWidthAndHeight", BindingFlags.NonPublic | BindingFlags.Instance, args);
 
             width = (int)args[0];
             height = (int)args[1];

@@ -5,6 +5,7 @@ using System.Net;
 using System.Reflection;
 using UnityEditor;
 using WWFramework.Helper;
+using WWFramework.Reflection;
 
 namespace WWFramework.Editor.Helper
 {
@@ -39,10 +40,8 @@ namespace WWFramework.Editor.Helper
 
         public static void ClearConsole()
         {
-            var assembly = Assembly.GetAssembly(typeof(ActiveEditorTracker));
-            var type = assembly.GetType("UnityEditorInternal.LogEntries");
-            var method = type.GetMethod("Clear");
-            method.Invoke(new object(), null);
+            var type = typeof (ActiveEditorTracker).GetSameAssemblyType("UnityEditorInternal.LogEntries");
+            type.InvokeStaticMethod("Clear");
         }
 
 
@@ -80,6 +79,17 @@ namespace WWFramework.Editor.Helper
             }
 
             return includeList;
+        }
+
+
+        public static void ChangeAutoGenerateLightingState(bool auto)
+        {
+            var settingsType = typeof(LightmapEditorSettings);
+            var settings = settingsType.InvokeStaticMethod("GetLightmapSettings", BindingFlags.Static | BindingFlags.NonPublic) as
+                    UnityEngine.Object;
+            var so = new SerializedObject(settings);
+            so.FindProperty("m_GIWorkflowMode").intValue = auto ? 0 : 1;
+            so.ApplyModifiedProperties();
         }
         #endregion
 

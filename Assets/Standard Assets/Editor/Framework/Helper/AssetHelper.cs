@@ -46,7 +46,7 @@ namespace WWFramework.Editor.Helper
 
         public static MonoScript FindScriptableObject(Type type)
         {
-            foreach (var monoScript in FindScriptableObjects())
+            foreach (var monoScript in AssetHelper.FindScriptableObjects())
             {
                 if (monoScript.GetClass() == type)
                 {
@@ -54,6 +54,15 @@ namespace WWFramework.Editor.Helper
                 }
             }
             return null;
+        }
+
+        public static MonoScript FindScriptableObjectQuickly(Type type)
+        {
+            var so = ScriptableObject.CreateInstance(type);
+            var script = MonoScript.FromScriptableObject(so);
+            Object.DestroyImmediate(so);
+
+            return script;
         }
 
         public static List<MonoScript> FindScriptableObjects()

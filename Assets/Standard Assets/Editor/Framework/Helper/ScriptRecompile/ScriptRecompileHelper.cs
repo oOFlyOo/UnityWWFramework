@@ -6,6 +6,7 @@ using System.IO;
 using System.Reflection;
 using UnityEditor;
 using UnityEditor.Callbacks;
+using WWFramework.Editor.Extension;
 
 namespace WWFramework.Editor.Helper
 {
@@ -30,8 +31,7 @@ namespace WWFramework.Editor.Helper
         private static void CreateOrLoadReloadAsset()
         {
             var monoScript = AssetHelper.FindScriptableObject(typeof (RecompileScriptableObject));
-            var path = string.Format("{0}/{1}.asset", Path.GetDirectoryName(AssetDatabase.GetAssetPath(monoScript)),
-                monoScript.name);
+            var path = monoScript.GetScriptableObjectPathByMonoScript();
             _scriptObj = AssetDatabase.LoadAssetAtPath<RecompileScriptableObject>(path);
             if (_scriptObj == null)
             {

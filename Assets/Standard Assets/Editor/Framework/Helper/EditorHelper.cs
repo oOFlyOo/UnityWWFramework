@@ -7,7 +7,7 @@ using UnityEditor;
 using WWFramework.Helper;
 using WWFramework.Reflection;
 
-namespace WWFramework.Editor.Helper
+namespace WWFramework.Helper.Editor
 {
     public static class EditorHelper
     {

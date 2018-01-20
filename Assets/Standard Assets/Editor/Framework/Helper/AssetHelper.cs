@@ -9,7 +9,7 @@ using UnityEngine;
 using WWFramework.Reflection;
 using Object = UnityEngine.Object;
 
-namespace WWFramework.Editor.Helper
+namespace WWFramework.Helper.Editor
 {
     public static class AssetHelper
     {

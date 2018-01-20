@@ -3,7 +3,7 @@ using System;
 using UnityEditor;
 using UnityEngine;
 
-namespace WWFramework.Editor.UI
+namespace WWFramework.UI.Editor
 {
     public static class EditorUIHelper
     {

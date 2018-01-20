@@ -6,9 +6,9 @@ using System.IO;
 using System.Reflection;
 using UnityEditor;
 using UnityEditor.Callbacks;
-using WWFramework.Editor.Extension;
+using WWFramework.Extension.Editor;
 
-namespace WWFramework.Editor.Helper
+namespace WWFramework.Helper.Editor
 {
     public static class ScriptRecompileHelper
     {

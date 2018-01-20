@@ -1,10 +1,10 @@
 ﻿using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine.SceneManagement;
-using WWFramework.Editor.Helper;
-using WWFramework.Editor.UI;
+using WWFramework.Helper.Editor;
+using WWFramework.UI.Editor;
 
-namespace WWFramework.Editor.Preference
+namespace WWFramework.Preference.Editor
 {
     [InitializeOnLoad]
     public static class LightingPreference

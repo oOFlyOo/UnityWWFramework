@@ -1,9 +1,6 @@
-﻿
-using System;
-using UnityEditor;
-using WWFramework.Editor.Helper;
+﻿using UnityEditor;
 
-namespace WWFramework.Editor.Extension
+namespace WWFramework.Extension.Editor
 {
     public static class UnityEditorExtesion
     {

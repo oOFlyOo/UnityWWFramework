@@ -1,10 +1,10 @@
 ﻿using System.Linq;
 using UnityEditor;
 using UnityEngine;
-using WWFramework.Editor.Helper;
-using WWFramework.Editor.UI;
+using WWFramework.Helper.Editor;
+using WWFramework.UI.Editor;
 
-namespace WWFramework.Editor.Util
+namespace WWFramework.Util.Editor
 {
     public class ReferenceEditorWindow: BaseEditorWindow
     {

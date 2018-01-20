@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace WWFramework.Editor.Preference
+namespace WWFramework.Preference.Editor
 {
     public class ExternalScriptableObject: ScriptableObject
     {

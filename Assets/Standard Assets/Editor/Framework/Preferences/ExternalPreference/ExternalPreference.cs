@@ -5,11 +5,11 @@ using System.IO;
 using UnityEditor;
 using UnityEditor.Callbacks;
 using UnityEngine;
-using WWFramework.Editor.Extension;
-using WWFramework.Editor.Helper;
-using WWFramework.Editor.UI;
+using WWFramework.Extension.Editor;
+using WWFramework.Helper.Editor;
+using WWFramework.UI.Editor;
 
-namespace WWFramework.Editor.Preference
+namespace WWFramework.Preference.Editor
 {
     public static class ExternalPreference
     {

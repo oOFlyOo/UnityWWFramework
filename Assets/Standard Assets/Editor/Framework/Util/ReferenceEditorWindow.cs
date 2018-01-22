@@ -25,6 +25,9 @@ namespace WWFramework.Util.Editor
 
             EditorUIHelper.Space();
             EditorUIHelper.Button("反向引用", ShowReverseDependences);
+
+            EditorUIHelper.Space();
+            EditorUIHelper.Button("内置引用", ShowBuiltinDependences);
         }
 
         private void ShowDependences()
@@ -39,6 +42,14 @@ namespace WWFramework.Util.Editor
             var objPaths = EditorHelper.GetReverseDependencies(paths);
 
             SelectingEditorWindow.Show(objPaths.ConvertAll(input => AssetDatabase.LoadMainAssetAtPath(input)), "反向引用：");
+        }
+
+        private void ShowBuiltinDependences()
+        {
+            var dependences = EditorUtility.CollectDependencies(GetSelections());
+            var builtin = dependences.Where(o => AssetHelper.IsBuiltinAsset(o)).ToList();
+
+            SelectingEditorWindow.Show(builtin, "引用的内置资源");
         }
 
         private Object[] GetSelections()

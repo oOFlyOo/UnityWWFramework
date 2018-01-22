@@ -158,6 +158,58 @@ namespace WWFramework.Helper.Editor
         }
         #endregion
 
+        #region 内置资源
+        public static Type[] BuiltinAssetTypes =
+        {
+            typeof(Mesh),
+            typeof(Material),
+            typeof(Texture2D),
+            typeof(Font),
+            typeof(Shader),
+            typeof(Sprite),
+            typeof(LightmapParameters),
+        };
+
+
+        private static List<Object> _builtinAssets;
+
+        public static List<Object> BuiltinAssets
+        {
+            get
+            {
+                if (_builtinAssets == null)
+                {
+                    _builtinAssets = new List<Object>();
+                    var utilityType = typeof(EditorGUIUtility);
+                    var unityType = utilityType.GetSameAssemblyType("UnityEditor.UnityType");
+                    var builinType = utilityType.GetSameAssemblyType("UnityEditor.BuiltinResource");
+
+                    foreach (var builtinAssetType in BuiltinAssetTypes)
+                    {
+                        var name = builtinAssetType.ToString().Substring(builtinAssetType.Namespace.Length + 1);
+                        var type = unityType.InvokeStaticMethod("FindTypeByName", ReflectionExtension.DefaultFlags, name);
+                        var id = unityType.GetPropertyValue(type, "persistentTypeID");
+                        var resArray = utilityType.InvokeStaticMethod("GetBuiltinResourceList",
+                            BindingFlags.Static | BindingFlags.NonPublic, id) as Array;
+                        foreach (var res in resArray)
+                        {
+                            var insId = (int)builinType.GetFieldValue(res, "m_InstanceID");
+                            _builtinAssets.Add(EditorUtility.InstanceIDToObject(insId));
+                        }
+                    }
+                }
+
+                return _builtinAssets;
+            }
+        }
+
+
+        public static bool IsBuiltinAsset(Object obj)
+        {
+            return BuiltinAssets.Contains(obj);
+        }
+        #endregion
+
         public static void GetTextureSize(TextureImporter importer, out int width, out int height)
         {
             object[] args = new object[2] { 0, 0 };

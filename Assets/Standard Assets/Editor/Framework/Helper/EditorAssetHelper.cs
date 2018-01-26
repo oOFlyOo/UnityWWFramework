@@ -2,16 +2,18 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using UnityEditor;
 using UnityEngine;
+using WWFramework.Extension;
 using WWFramework.Reflection;
 using Object = UnityEngine.Object;
 
 namespace WWFramework.Helper.Editor
 {
-    public static class AssetHelper
+    public static class EditorAssetHelper
     {
         #region 资源查找
         public enum SearchFilter
@@ -34,19 +36,19 @@ namespace WWFramework.Helper.Editor
             VideoClip,
         }
 
-        public static string[] FindAssets(SearchFilter filter, string[] searchInFolders = null)
+        public static string[] FindAssets(SearchFilter filter, params string[] searchInFolders)
         {
-            return AssetDatabase.FindAssets(String.Format("t:{0}", filter), searchInFolders);
+            return AssetDatabase.FindAssets(String.Format("t:{0}", filter), searchInFolders.ParamsFixing());
         }
 
-        public static List<string> FindAssetsPaths(SearchFilter filter, string[] searchInFolders = null)
+        public static List<string> FindAssetsPaths(SearchFilter filter, params string[] searchInFolders)
         {
-            return FindAssets(filter, searchInFolders).Select(AssetDatabase.GUIDToAssetPath).ToList();
+            return FindAssets(filter, searchInFolders.ParamsFixing()).Select(AssetDatabase.GUIDToAssetPath).ToList();
         }
 
         public static MonoScript FindScriptableObject(Type type)
         {
-            foreach (var monoScript in AssetHelper.FindScriptableObjects())
+            foreach (var monoScript in EditorAssetHelper.FindScriptableObjects())
             {
                 if (monoScript.GetClass() == type)
                 {
@@ -207,6 +209,33 @@ namespace WWFramework.Helper.Editor
         public static bool IsBuiltinAsset(Object obj)
         {
             return BuiltinAssets.Contains(obj);
+        }
+        #endregion
+
+        #region 获取一些路径相关
+        [MenuItem("Assets/Path/CopyRelativePath", true)]
+        [MenuItem("Assets/Path/CopyAbsolutionPath", true)]
+        private static bool CopyRelativePathCheck()
+        {
+            return Selection.assetGUIDs.Length == 1;
+        }
+
+        [MenuItem("Assets/Path/CopyRelativePath")]
+        private static void CopyRelativePath()
+        {
+            GUIUtility.systemCopyBuffer = AssetDatabase.GUIDToAssetPath(Selection.assetGUIDs[0]);
+        }
+
+        [MenuItem("Assets/Path/CopyAbsolutionPath")]
+        private static void CopyAbsolutionPath()
+        {
+            GUIUtility.systemCopyBuffer = IOHelper.GetFullPath(AssetDatabase.GUIDToAssetPath(Selection.assetGUIDs[0]));
+        }
+
+
+        public static string GetLibraryDll(string name)
+        {
+            return string.Format("{0}/Library/ScriptAssemblies/{1}.dll", IOHelper.CurrentDirectory, name);
         }
         #endregion
 

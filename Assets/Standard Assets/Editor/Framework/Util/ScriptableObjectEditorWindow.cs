@@ -18,7 +18,7 @@ namespace WWFramework.Util.Editor
             {
                 if (_scriptList == null)
                 {
-                    _scriptList = AssetHelper.FindScriptableObjects();
+                    _scriptList = EditorAssetHelper.FindScriptableObjects();
                 }
                 return _scriptList;
             }
@@ -47,11 +47,11 @@ namespace WWFramework.Util.Editor
         private void CreateScriptObject(MonoScript script)
         {
             var path = Path.GetDirectoryName(AssetDatabase.GetAssetPath(script));
-            var asset = AssetHelper.CreateScriptableObjectAsset(script.GetClass(),
+            var asset = EditorAssetHelper.CreateScriptableObjectAsset(script.GetClass(),
                 string.Format("{0}/{1}.asset", path, script.name));
 
             AssetDatabase.Refresh();
-            AssetHelper.SelectObject(asset);
+            EditorAssetHelper.SelectObject(asset);
         }
     }
 }

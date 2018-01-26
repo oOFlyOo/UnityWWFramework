@@ -34,6 +34,11 @@ namespace WWFramework.Helper
 
             return fullPath.Remove(0, rootPath.Length + 1);
         }
+
+        public static string GetFullPath(string relativePath)
+        {
+            return Path.GetFullPath(relativePath).Replace("\\", "/");
+        }
         #endregion
 
         #region 文件，文件夹操作

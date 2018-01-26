@@ -32,7 +32,7 @@ namespace WWFramework.Preference.Editor
             get
             {
                 return
-                    AssetHelper.FindScriptableObjectQuickly(typeof(ExternalScriptableObject))
+                    EditorAssetHelper.FindScriptableObjectQuickly(typeof(ExternalScriptableObject))
                         .GetScriptableObjectPathByMonoScript();
             }
         }

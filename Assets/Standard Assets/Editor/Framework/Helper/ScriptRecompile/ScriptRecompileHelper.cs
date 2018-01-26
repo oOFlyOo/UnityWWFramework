@@ -30,12 +30,12 @@ namespace WWFramework.Helper.Editor
 
         private static void CreateOrLoadReloadAsset()
         {
-            var monoScript = AssetHelper.FindScriptableObject(typeof (RecompileScriptableObject));
+            var monoScript = EditorAssetHelper.FindScriptableObject(typeof (RecompileScriptableObject));
             var path = monoScript.GetScriptableObjectPathByMonoScript();
             _scriptObj = AssetDatabase.LoadAssetAtPath<RecompileScriptableObject>(path);
             if (_scriptObj == null)
             {
-                _scriptObj = AssetHelper.CreateScriptableObjectAsset<RecompileScriptableObject>(path);
+                _scriptObj = EditorAssetHelper.CreateScriptableObjectAsset<RecompileScriptableObject>(path);
             }
         }
 

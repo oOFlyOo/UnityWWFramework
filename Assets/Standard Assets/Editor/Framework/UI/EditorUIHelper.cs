@@ -24,6 +24,20 @@ namespace WWFramework.UI.Editor
             }
         }
 
+        private static GUIStyle _rightButtonStyle;
+        public static GUIStyle RightButtonStyle
+        {
+            get
+            {
+                if (_rightButtonStyle == null)
+                {
+                    _rightButtonStyle = new GUIStyle(GUI.skin.button);
+                    _rightButtonStyle.alignment = TextAnchor.MiddleRight;
+                }
+                return _rightButtonStyle;
+            }
+        }
+
         private static GUIStyle _normalButtonStyle;
         public static GUIStyle NormalButtonStyle
         {
@@ -38,6 +52,19 @@ namespace WWFramework.UI.Editor
             }
         }
 
+        private static GUIStyle _buttonStyle;
+        public static GUIStyle ButtonStyle
+        {
+            get
+            {
+                if (_buttonStyle == null)
+                {
+                    _buttonStyle = new GUIStyle(GUI.skin.button);
+                }
+                return _buttonStyle;
+            }
+        }
+
         private static GUIStyle _searchTextField;
         public static GUIStyle SearchTextField
         {
@@ -48,6 +75,97 @@ namespace WWFramework.UI.Editor
                     _searchTextField = new GUIStyle("SearchTextField");
                 }
                 return _searchTextField;
+            }
+        }
+
+        private static GUIStyle _searchCancelButton;
+        public static GUIStyle SearchCancelButton
+        {
+            get
+            {
+                if (_searchCancelButton == null)
+                {
+                    _searchCancelButton = new GUIStyle("SearchCancelButton");
+                }
+                return _searchCancelButton;
+            }
+        }
+
+        private static GUIStyle _searchCancelButtonEmpty;
+        public static GUIStyle SearchCancelButtonEmpty
+        {
+            get
+            {
+                if (_searchCancelButtonEmpty == null)
+                {
+                    _searchCancelButtonEmpty = new GUIStyle("SearchCancelButtonEmpty");
+                }
+                return _searchCancelButtonEmpty;
+            }
+        }
+
+        private static GUIStyle _buttonLeft;
+        public static GUIStyle ButtonLeft
+        {
+            get
+            {
+                if (_buttonLeft == null)
+                {
+                    _buttonLeft = new GUIStyle("ButtonLeft");
+                }
+                return _buttonLeft;
+            }
+        }
+
+        private static GUIStyle _buttonMid;
+        public static GUIStyle ButtonMid
+        {
+            get
+            {
+                if (_buttonMid == null)
+                {
+                    _buttonMid = new GUIStyle("ButtonMid");
+                }
+                return _buttonMid;
+            }
+        }
+
+        private static GUIStyle _buttonRight;
+        public static GUIStyle ButtonRight
+        {
+            get
+            {
+                if (_buttonRight == null)
+                {
+                    _buttonRight = new GUIStyle("ButtonRight");
+                }
+                return _buttonRight;
+            }
+        }
+
+        private static GUIStyle _textFieldStyle;
+        public static GUIStyle TextFieldStyle
+        {
+            get
+            {
+                if (_textFieldStyle == null)
+                {
+                    _textFieldStyle = new GUIStyle("TextField");
+                }
+                return _textFieldStyle;
+            }
+        }
+
+        private static GUIStyle _textAreaStyle;
+        public static GUIStyle TextAreaStyle
+        {
+            get
+            {
+                if (_textAreaStyle == null)
+                {
+                    _textAreaStyle = new GUIStyle("TextArea");
+                }
+                return _textAreaStyle;
             }
         }
 
@@ -86,6 +204,11 @@ namespace WWFramework.UI.Editor
             EditorGUILayout.Space();
         }
 
+        public static void Space(float pixel)
+        {
+            GUILayout.Space(pixel);
+        }
+
         public static void DrawLine()
         {
             LabelField("", GUI.skin.horizontalSlider);
@@ -97,9 +220,10 @@ namespace WWFramework.UI.Editor
         }
 
 
-        public static Rect BeginVertical(params GUILayoutOption[] options)
+        public static Rect BeginVertical(GUIStyle style = null, params GUILayoutOption[] options)
         {
-            return EditorGUILayout.BeginVertical(options);
+            style = style ?? GUIStyle.none;
+            return EditorGUILayout.BeginVertical(style, options);
         }
 
 
@@ -109,9 +233,10 @@ namespace WWFramework.UI.Editor
         }
 
 
-        public static Rect BeginHorizontal(params GUILayoutOption[] options)
+        public static Rect BeginHorizontal(GUIStyle style = null, params GUILayoutOption[] options)
         {
-            return EditorGUILayout.BeginHorizontal(options);
+            style = style ?? GUIStyle.none;
+            return EditorGUILayout.BeginHorizontal(style, options);
         }
 
 
@@ -145,6 +270,17 @@ namespace WWFramework.UI.Editor
         }
 
 
+        public static void BeginSelectdColor(bool selected)
+        {
+            GUI.backgroundColor = selected ? Color.yellow : Color.white;
+        }
+
+        public static void EndSelectedColor()
+        {
+            GUI.backgroundColor = Color.white;
+        }
+
+
         public static void TitleField(string title, string label = null)
         {
             EditorGUILayout.LabelField(title, label);
@@ -165,6 +301,29 @@ namespace WWFramework.UI.Editor
             return EditorGUILayout.TextField(label, text, style, options);
         }
 
+        public static string SearchCancelTextField(string text)
+        {
+            BeginHorizontal();
+            {
+                text = TextField(string.Empty, text, SearchTextField);
+
+                var flag = !string.IsNullOrEmpty(text);
+                Action action = null;
+                if (flag)
+                {
+                    action = () =>
+                    {
+                        text = string.Empty;
+                        GUIUtility.keyboardControl = 0;
+                    };
+                }
+
+                Button(string.Empty, action, flag ? SearchCancelButton : SearchCancelButtonEmpty);
+            }
+            EndHorizontal();
+
+            return text;
+        }
 
         public static int IntSlider(string title, int value, int lValue, int rValue)
         {
@@ -172,7 +331,7 @@ namespace WWFramework.UI.Editor
         }
 
 
-        private const int LimitedButtonClickTime = 100;
+        private const int LimitedButtonClickTime = 60;
         private static long _lastButtonClickTime;
 
         public static void Button(string text, Action callback = null, GUIStyle style = null)
@@ -201,6 +360,12 @@ namespace WWFramework.UI.Editor
             return (T)Convert.ChangeType(EditorGUILayout.EnumPopup(title, selectedEnum, style), typeof(T));
         }
 
+        public static int Popup(string title, int index, string[] displayedOptions, GUIStyle style = null)
+        {
+            style = style ?? EditorStyles.popup;
+            return EditorGUILayout.Popup(title, index, displayedOptions, style);
+        }
+
 
         public static UnityEngine.Object ObjectField(string title, UnityEngine.Object obj, Type type = null, bool allowSceneObjects = false)
         {
@@ -212,6 +377,16 @@ namespace WWFramework.UI.Editor
         {
             style = style ?? GUI.skin.toggle;
             return EditorGUILayout.Toggle(label, value, style, options);
+        }
+
+        public static bool ToggleInner(string label, bool value)
+        {
+            return GUILayout.Toggle(value, label, TextFieldStyle);
+        }
+
+        public static int Toolbar(int index, string[] labels)
+        {
+            return GUILayout.Toolbar(index, labels);
         }
 
 

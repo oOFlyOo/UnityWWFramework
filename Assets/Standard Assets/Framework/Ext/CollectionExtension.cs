@@ -6,8 +6,9 @@ namespace WWFramework.Extension
 {
     public static class CollectionExtension
     {
+        #region 弃用
         [Obsolete("只是一个模板，必须单独每个写")]
-        public sealed class EnumComparer<T> : IEqualityComparer<T> where T: IComparable, IConvertible
+        public sealed class EnumComparer<T> : IEqualityComparer<T> where T : IComparable, IConvertible
         {
             private static EnumComparer<T> _instance;
 
@@ -25,7 +26,7 @@ namespace WWFramework.Extension
 
             private EnumComparer()
             {
-                
+
             }
 
             public bool Equals(T x, T y)
@@ -62,5 +63,30 @@ namespace WWFramework.Extension
                 }
             }
         }
+        #endregion
+
+        #region list
+        public static bool AddIfWithout<T>(this List<T> list, T item)
+        {
+            if (!list.Contains(item))
+            {
+                list.Add(item);
+
+                return true;
+            }
+
+            return false;
+        }
+
+        public static T[] ParamsFixing<T>(this T[] array)
+        {
+            if (array != null && array.Length == 1 && array[0] == null)
+            {
+                array = null;
+            }
+
+            return array;
+        }
+        #endregion
     }
 }

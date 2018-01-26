@@ -16,7 +16,7 @@ namespace WWFramework.Util.Editor
         {
             EditorUIHelper.Button("显示内置资源", () =>
             {
-                SelectingEditorWindow.Show(AssetHelper.BuiltinAssets);
+                SelectingEditorWindow.Show(EditorAssetHelper.BuiltinAssets);
             });
         }
     }

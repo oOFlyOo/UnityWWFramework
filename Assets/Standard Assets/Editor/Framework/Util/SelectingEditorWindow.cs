@@ -52,7 +52,7 @@ namespace WWFramework.Util.Editor
                     EditorUIHelper.BeginHorizontal();
                     {
                         EditorUIHelper.ObjectField(string.Empty, go, null, true);
-                        EditorUIHelper.Button("选中", () => AssetHelper.SelectObject(go));
+                        EditorUIHelper.Button("选中", () => EditorAssetHelper.SelectObject(go));
                         var index = i;
                         EditorUIHelper.Button("移除", () => RemoveGo(index));
                     }

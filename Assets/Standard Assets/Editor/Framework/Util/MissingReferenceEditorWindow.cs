@@ -28,10 +28,10 @@ namespace WWFramework.Util.Editor
         private void FindAllAssets()
         {
             var checkList =
-                AssetHelper.FindAssetsPaths(AssetHelper.SearchFilter.Prefab)
+                EditorAssetHelper.FindAssetsPaths(EditorAssetHelper.SearchFilter.Prefab)
                     .Select(AssetDatabase.LoadAssetAtPath<GameObject>);
 
-            var resultList = AssetHelper.FindMissingReferences(checkList.ToList());
+            var resultList = EditorAssetHelper.FindMissingReferences(checkList.ToList());
 
             SelectingEditorWindow.Show(resultList.ConvertAll(input => (Object)input));
         }
@@ -40,7 +40,7 @@ namespace WWFramework.Util.Editor
         {
             var checkList = SceneManager.GetActiveScene().GetRootGameObjects();
 
-            var resultList = AssetHelper.FindMissingReferences(checkList.ToList());
+            var resultList = EditorAssetHelper.FindMissingReferences(checkList.ToList());
 
             SelectingEditorWindow.Show(resultList.ConvertAll(input => (Object)input));
         }

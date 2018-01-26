@@ -47,7 +47,7 @@ namespace WWFramework.Util.Editor
         private void ShowBuiltinDependences()
         {
             var dependences = EditorUtility.CollectDependencies(GetSelections());
-            var builtin = dependences.Where(o => AssetHelper.IsBuiltinAsset(o)).ToList();
+            var builtin = dependences.Where(o => EditorAssetHelper.IsBuiltinAsset(o)).ToList();
 
             SelectingEditorWindow.Show(builtin, "引用的内置资源");
         }

@@ -89,59 +89,78 @@ namespace WWFramework.Helper.Editor
         }
 
 
-        public static List<GameObject> FindMissingReferences(List<GameObject> checksObjects)
+        public static List<Object> FindMissingReferences(List<Object> checksObjects)
         {
-            var resultList = new List<GameObject>();
-
+            var resultList = new List<Object>();
+            var hasCheckList = new List<Object>();
             foreach (var checksObject in checksObjects)
             {
-                FindMissingReferences(checksObject, resultList);
+                FindMissingReferences(checksObject, resultList, hasCheckList);
             }
 
             return resultList;
         }
 
-        public static void FindMissingReferences(GameObject go, List<GameObject> resultList)
+        public static void FindMissingReferences(Object obj, List<Object> resultList, List<Object> hasCheckList)
         {
-            foreach (var com in go.GetComponents<Component>())
+            if (obj == null || resultList.Contains(obj) || hasCheckList.Contains(obj))
             {
-                if (com == null)
-                {
-                    resultList.Add(go);
+                return;
+            }
 
-                    break;
+            hasCheckList.Add(obj);
+
+            var go = obj as GameObject;
+            var objMissing = false;
+            if (go != null)
+            {
+                foreach (var com in go.GetComponents<Component>())
+                {
+                    if (com == null)
+                    {
+                        if (!objMissing)
+                        {
+                            objMissing = true;
+                            resultList.AddIfWithout(obj);
+                        }
+                    }
+                    else
+                    {
+                        FindMissingReferences(com, resultList, hasCheckList);
+                    }
                 }
 
-                var result = false;
-                var so = new SerializedObject(com);
+                foreach (Transform trans in go.transform)
+                {
+                    FindMissingReferences(trans.gameObject, resultList, hasCheckList);
+                }
+            }
+            else
+            {
+                var so = new SerializedObject(obj);
                 var sp = so.GetIterator();
                 while (sp.NextVisible(true))
                 {
                     if (sp.propertyType == SerializedPropertyType.ObjectReference)
                     {
-                        if (sp.objectReferenceValue == null
-                            && sp.objectReferenceInstanceIDValue != 0)
+                        if (sp.objectReferenceValue == null)
                         {
-                            resultList.Add(com.gameObject);
-                            result = true;
-
-                            break;
+                            if (sp.objectReferenceInstanceIDValue != 0 && !objMissing)
+                            {
+                                objMissing = true;
+                                resultList.AddIfWithout(obj);
+                            }
+                        }
+                        else
+                        {
+                            FindMissingReferences(sp.objectReferenceValue, resultList, hasCheckList);
                         }
                     }
                 }
-
-                if (result)
-                {
-                    break;
-                }
             }
 
-            foreach (Transform trans in go.transform)
-            {
-                FindMissingReferences(trans.gameObject, resultList);
-            }
+
         }
-
         #endregion
 
 

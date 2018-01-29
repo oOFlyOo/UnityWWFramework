@@ -1,6 +1,4 @@
-﻿
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -28,21 +26,21 @@ namespace WWFramework.Util.Editor
         private void FindAllAssets()
         {
             var checkList =
-                EditorAssetHelper.FindAssetsPaths(EditorAssetHelper.SearchFilter.Prefab)
-                    .Select(AssetDatabase.LoadAssetAtPath<GameObject>);
+                AssetDatabase.GetAllAssetPaths()
+                    .Select(s => AssetDatabase.LoadMainAssetAtPath(s));
 
             var resultList = EditorAssetHelper.FindMissingReferences(checkList.ToList());
 
-            SelectingEditorWindow.Show(resultList.ConvertAll(input => (Object)input));
+            SelectingEditorWindow.Show(resultList);
         }
 
         private void FindCurrentScene()
         {
             var checkList = SceneManager.GetActiveScene().GetRootGameObjects();
 
-            var resultList = EditorAssetHelper.FindMissingReferences(checkList.ToList());
+            var resultList = EditorAssetHelper.FindMissingReferences(checkList.Select(o => o as Object).ToList());
 
-            SelectingEditorWindow.Show(resultList.ConvertAll(input => (Object)input));
+            SelectingEditorWindow.Show(resultList);
         }
     }
 }

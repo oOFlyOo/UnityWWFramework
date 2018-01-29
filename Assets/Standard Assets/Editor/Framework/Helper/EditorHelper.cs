@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Reflection;
 using UnityEditor;
+using UnityEngine;
 using WWFramework.Helper;
 using WWFramework.Reflection;
 
@@ -12,7 +14,6 @@ namespace WWFramework.Helper.Editor
     public static class EditorHelper
     {
         #region 通用
-
         public static byte[] HttpRequest(string url, int timeOut = 3000)
         {
             var request = WebRequest.Create(url);
@@ -40,7 +41,7 @@ namespace WWFramework.Helper.Editor
 
         public static void ClearConsole()
         {
-            var type = typeof (ActiveEditorTracker).GetSameAssemblyType("UnityEditorInternal.LogEntries");
+            var type = typeof(ActiveEditorTracker).GetSameAssemblyType("UnityEditorInternal.LogEntries");
             type.InvokeStaticMethod("Clear");
         }
 
@@ -54,7 +55,7 @@ namespace WWFramework.Helper.Editor
         public static List<string> GetReverseDependencies(string[] paths, string[] searchPaths = null)
         {
             var includeList = new List<string>();
-            searchPaths = searchPaths ?? new[] {IOHelper.CurrentDirectory};
+            searchPaths = searchPaths ?? new[] { IOHelper.CurrentDirectory };
             foreach (var searchPath in searchPaths)
             {
                 foreach (var file in Directory.GetFiles(searchPath, "*", SearchOption.AllDirectories))
@@ -90,6 +91,69 @@ namespace WWFramework.Helper.Editor
             var so = new SerializedObject(settings);
             so.FindProperty("m_GIWorkflowMode").intValue = auto ? 0 : 1;
             so.ApplyModifiedProperties();
+        }
+
+        #endregion
+
+        #region 视窗更改
+
+        private const string CustomGameViewSizeName = "Custom";
+
+        public static void SetEditorGameViewSize(int width, int height)
+        {
+            var ssType = typeof(ScriptableSingleton<>);
+            var gameViewSizesType = ssType.GetSameAssemblyType("UnityEditor.GameViewSizes");
+            var ssgvsType = ssType.MakeGenericType(gameViewSizesType);
+            var gameViewSizes = ssgvsType.GetStaticPropertyValue("instance");
+            var curSizeGroup = gameViewSizesType.GetPropertyValue("currentGroup", gameViewSizes);
+            var gameViewSizeGroupType = ssType.GetSameAssemblyType("UnityEditor.GameViewSizeGroup");
+            var customGameSizeList = gameViewSizeGroupType.GetFieldValue("m_Custom", curSizeGroup, BindingFlags.Instance | BindingFlags.NonPublic) as IList;
+            var gameViewSizeType = ssType.GetSameAssemblyType("UnityEditor.GameViewSize");
+
+            object curGameSize = null;
+            foreach (var obj in customGameSizeList)
+            {
+                if (gameViewSizeType.GetPropertyValue("baseText", obj).ToString() == CustomGameViewSizeName)
+                {
+                    curGameSize = obj;
+                    break;
+                }
+            }
+
+            if (curGameSize == null)
+            {
+                var gameViewSizeTypeType = ssType.GetSameAssemblyType("UnityEditor.GameViewSizeType");
+                curGameSize = Activator.CreateInstance(gameViewSizeType, Enum.GetValues(gameViewSizeTypeType).GetValue(1), width, height, CustomGameViewSizeName);
+                gameViewSizeGroupType.InvokeMethod("AddCustomSize", curSizeGroup, ReflectionExtension.DefaultFlags, curGameSize);
+            }
+            else
+            {
+                gameViewSizeType.SetPropertyValue("width", curGameSize, width);
+                gameViewSizeType.SetPropertyValue("height", curGameSize, height);
+            }
+
+            var builtinCount = (int)gameViewSizeGroupType.InvokeMethod("GetBuiltinCount", curSizeGroup);
+
+            var index = (int) gameViewSizeGroupType.InvokeMethod("IndexOf", curSizeGroup, ReflectionExtension.DefaultFlags,
+                        curGameSize);
+
+            var editorWindowType = ssType.GetSameAssemblyType("UnityEditor.GameView");
+            var editorWindow = EditorWindow.GetWindow(editorWindowType);
+            editorWindowType.InvokeMethod("SizeSelectionCallback", editorWindow,
+                BindingFlags.Instance | BindingFlags.NonPublic, index + builtinCount);
+        }
+
+        public static void GetEditorGameViewSize(out int width, out int height)
+        {
+            var editorType = typeof(UnityEditor.Editor);
+
+            var editorWinType = editorType.GetSameAssemblyType("UnityEditor.GameView");
+            var editorWindow = EditorWindow.GetWindow(editorWinType);
+            var curGameViewSize = editorWinType.GetPropertyValue("currentGameViewSize", editorWindow, BindingFlags.Instance | BindingFlags.NonPublic);
+            var gameViewSizeType = editorType.GetSameAssemblyType("UnityEditor.GameViewSize");
+
+            width = (int)gameViewSizeType.GetPropertyValue("width", curGameViewSize);
+            height = (int)gameViewSizeType.GetPropertyValue("height", curGameViewSize);
         }
         #endregion
 

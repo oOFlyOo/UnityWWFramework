@@ -190,12 +190,12 @@ namespace WWFramework.Helper.Editor
                     {
                         var name = builtinAssetType.ToString().Substring(builtinAssetType.Namespace.Length + 1);
                         var type = unityType.InvokeStaticMethod("FindTypeByName", ReflectionExtension.DefaultFlags, name);
-                        var id = unityType.GetPropertyValue(type, "persistentTypeID");
+                        var id = unityType.GetPropertyValue("persistentTypeID", type);
                         var resArray = utilityType.InvokeStaticMethod("GetBuiltinResourceList",
                             BindingFlags.Static | BindingFlags.NonPublic, id) as Array;
                         foreach (var res in resArray)
                         {
-                            var insId = (int)builinType.GetFieldValue(res, "m_InstanceID");
+                            var insId = (int)builinType.GetFieldValue("m_InstanceID", res);
                             _builtinAssets.Add(EditorUtility.InstanceIDToObject(insId));
                         }
                     }
@@ -243,7 +243,7 @@ namespace WWFramework.Helper.Editor
         {
             object[] args = new object[2] { 0, 0 };
 
-            importer.GetType().InvokeMethod(importer, "GetWidthAndHeight", BindingFlags.NonPublic | BindingFlags.Instance, args);
+            importer.GetType().InvokeMethod("GetWidthAndHeight", importer, BindingFlags.NonPublic | BindingFlags.Instance, args);
 
             width = (int)args[0];
             height = (int)args[1];

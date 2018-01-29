@@ -39,6 +39,11 @@ namespace WWFramework.Util
             _arguments.Add(argument);
         }
 
+        public void AppendPath(string path)
+        {
+            AppendArgument(string.Format("\"{0}\"", path));
+        }
+
         private void InitProcessStartInfo()
         {
             _processStartInfo = new ProcessStartInfo()
@@ -51,7 +56,7 @@ namespace WWFramework.Util
 
         public void Start()
         {
-            if (_processStartInfo != null)
+            if (_processStartInfo == null)
             {
                 InitProcessStartInfo();
 
@@ -64,7 +69,7 @@ namespace WWFramework.Util
         {
             var exitCode = 0;
 
-            if (_processStartInfo != null)
+            if (_processStartInfo == null)
             {
                 InitProcessStartInfo();
 

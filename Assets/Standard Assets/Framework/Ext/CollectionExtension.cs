@@ -87,6 +87,16 @@ namespace WWFramework.Extension
 
             return array;
         }
+
+
+        public static void Foreach<TKey>(this List<TKey> list, Action<int, TKey> callback)
+        {
+            var count = list.Count;
+            for (int i = 0; i < count; i++)
+            {
+                callback(i, list[i]);
+            }
+        }
         #endregion
     }
 }

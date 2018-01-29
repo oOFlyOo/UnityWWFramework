@@ -8,6 +8,7 @@ using UnityEngine;
 using WWFramework.Extension.Editor;
 using WWFramework.Helper.Editor;
 using WWFramework.UI.Editor;
+using WWFramework.Util;
 
 namespace WWFramework.Preference.Editor
 {
@@ -117,7 +118,10 @@ namespace WWFramework.Preference.Editor
                     }
                     else
                     {
-                        Process.Start(externalTool.ToolPath, path);
+                        var process = SystemProcess.CreateProcess(externalTool.ToolPath, false);
+                        process.AppendPath(path);
+                        process.Start();
+//                        Process.Start(externalTool.ToolPath, path);
                     }
                     return true;
                 }

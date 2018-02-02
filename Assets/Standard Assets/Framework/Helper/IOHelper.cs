@@ -22,6 +22,11 @@ namespace WWFramework.Helper
         }
 
 
+        public static string NewLine
+        {
+            get { return "\r\n"; }
+        }
+
         /// <summary>
         /// 输入进来的 fullPath 的保证是 / 而不是 \
         /// </summary>

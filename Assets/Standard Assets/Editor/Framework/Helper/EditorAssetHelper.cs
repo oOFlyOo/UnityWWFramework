@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using UnityEditor;
@@ -18,6 +17,7 @@ namespace WWFramework.Helper.Editor
         #region 资源查找
         public enum SearchFilter
         {
+            All,
             AnimationClip,
             AudioClip,
             AudioMixer,
@@ -38,7 +38,8 @@ namespace WWFramework.Helper.Editor
 
         public static string[] FindAssets(SearchFilter filter, params string[] searchInFolders)
         {
-            return AssetDatabase.FindAssets(String.Format("t:{0}", filter), searchInFolders.ParamsFixing());
+            var filterStr = filter != SearchFilter.All ? string.Format("t:{0}", filter) : null;
+            return AssetDatabase.FindAssets(filterStr, searchInFolders.ParamsFixing());
         }
 
         public static List<string> FindAssetsPaths(SearchFilter filter, params string[] searchInFolders)
@@ -121,7 +122,7 @@ namespace WWFramework.Helper.Editor
                         if (!objMissing)
                         {
                             objMissing = true;
-                            resultList.AddIfWithout(obj);
+                            resultList.AddIfNotExist(obj);
                         }
                     }
                     else
@@ -148,7 +149,7 @@ namespace WWFramework.Helper.Editor
                             if (sp.objectReferenceInstanceIDValue != 0 && !objMissing)
                             {
                                 objMissing = true;
-                                resultList.AddIfWithout(obj);
+                                resultList.AddIfNotExist(obj);
                             }
                         }
                         else
@@ -228,6 +229,34 @@ namespace WWFramework.Helper.Editor
         public static bool IsBuiltinAsset(Object obj)
         {
             return BuiltinAssets.Contains(obj);
+        }
+
+        public static int GetInstanceIDFromGUID(string guid)
+        {
+            return (int) typeof (AssetDatabase).InvokeStaticMethod("GetInstanceIDFromGUID",
+                BindingFlags.Static | BindingFlags.NonPublic, guid);
+        }
+
+        public static Object GUIDToObject(string guid)
+        {
+            if (string.IsNullOrEmpty(guid))
+            {
+                return null;
+            }
+
+            var id = GetInstanceIDFromGUID(guid);
+            if (id != 0)
+            {
+                return EditorUtility.InstanceIDToObject(id);
+            }
+
+            var path = AssetDatabase.GUIDToAssetPath(guid);
+            if (string.IsNullOrEmpty(path))
+            {
+                return null;
+            }
+
+            return AssetDatabase.LoadMainAssetAtPath(path);
         }
         #endregion
 

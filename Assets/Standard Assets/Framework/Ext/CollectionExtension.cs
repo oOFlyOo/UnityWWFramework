@@ -66,7 +66,7 @@ namespace WWFramework.Extension
         #endregion
 
         #region list
-        public static bool AddIfWithout<T>(this List<T> list, T item)
+        public static bool AddIfNotExist<T>(this List<T> list, T item)
         {
             if (!list.Contains(item))
             {
@@ -97,6 +97,43 @@ namespace WWFramework.Extension
                 callback(i, list[i]);
             }
         }
+
+
+        public static void Foreach<TKey>(this TKey[] list, Action<int, TKey> callback)
+        {
+            var count = list.Length;
+            for (int i = 0; i < count; i++)
+            {
+                callback(i, list[i]);
+            }
+        }
+
+
+        public static T SafeGetValue<T>(this List<T> list, int index)
+        {
+            if (list != null && list.Count > index)
+            {
+                return list[index];
+            }
+
+            return default(T);
+        }
+        #endregion
+
+
+        #region dict
+        public static V SafeGetValue<K, V>(this Dictionary<K, V> dict, K key)
+        {
+            if (dict != null)
+            {
+                V value;
+                dict.TryGetValue(key, out value);
+                return value;
+            }
+
+            return default(V);
+        }
+
         #endregion
     }
 }

@@ -207,5 +207,35 @@ namespace WWFramework.Helper.Editor
             }
         }
         #endregion
+
+
+        #region 进度条，Mac下巨慢
+        public static void DisplayProgressBar(string title, string info, float progress, bool force = false)
+        {
+            if (Application.platform != RuntimePlatform.OSXEditor || force)
+            {
+                EditorUtility.DisplayProgressBar(title, info, progress);
+            }
+        }
+
+
+        public static bool DisplayCancelableProgressBar(string title, string info, float progress, bool force = false)
+        {
+            if (Application.platform != RuntimePlatform.OSXEditor || force)
+            {
+                return EditorUtility.DisplayCancelableProgressBar(title, info, progress);
+            }
+
+            return false;
+        }
+
+        public static void ClearProgressBar(bool force = false)
+        {
+            if (Application.platform != RuntimePlatform.OSXEditor || force)
+            {
+                EditorUtility.ClearProgressBar();
+            }
+        }
+        #endregion
     }
 }

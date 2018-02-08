@@ -1,13 +1,13 @@
 ﻿
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEngine;
 using WWFramework.Helper.Editor;
-using WWFramework.Optimazation.Editor;
+using WWFramework.Optimization.Editor;
 using WWFramework.UI.Editor;
-using WWFramework.Util;
 
 namespace WWFramework.Optimaztion.Editor
 {
@@ -23,25 +23,7 @@ namespace WWFramework.Optimaztion.Editor
 
         public override void Analyse(Object[] assets)
         {
-            List<Material> mats = null;
-            if (assets != null && assets.Length > 0)
-            {
-                mats = new List<Material>();
-                Material mat;
-                foreach (var asset in assets)
-                {
-                    mat = asset as Material;
-                    if (mat != null)
-                    {
-                        mats.Add(mat);
-                    }
-                }
-            }
-            else
-            {
-                mats = GetProjectMaterials();
-            }
-
+            var mats = GetObjects<Material>(assets);
             _sickMaterials.Clear();
 
             foreach (var mat in mats)
@@ -87,11 +69,15 @@ namespace WWFramework.Optimaztion.Editor
             }
         }
 
-        private List<Material> GetProjectMaterials()
+        protected override List<Object> GetFilterObjects(Object[] assets)
         {
-            return
-                EditorAssetHelper.FindAssetsPaths(EditorAssetHelper.SearchFilter.Material)
-                    .ConvertAll(AssetDatabase.LoadAssetAtPath<Material>);
+            return assets.Where(o => o as Material).ToList();
+        }
+
+        protected override List<Object> GetProjectObjects()
+        {
+            return EditorAssetHelper.FindAssetsPaths(EditorAssetHelper.SearchFilter.Material)
+                    .ConvertAll(AssetDatabase.LoadMainAssetAtPath);
         }
     }
 }

@@ -280,6 +280,12 @@ namespace WWFramework.Helper.Editor
             GUIUtility.systemCopyBuffer = IOHelper.GetFullPath(AssetDatabase.GUIDToAssetPath(Selection.assetGUIDs[0]));
         }
 
+        [MenuItem("Assets/Save Assets %#&s")]
+        private static void SaveAssets()
+        {
+            AssetDatabase.SaveAssets();
+        }
+
 
         public static string GetLibraryDll(string name)
         {

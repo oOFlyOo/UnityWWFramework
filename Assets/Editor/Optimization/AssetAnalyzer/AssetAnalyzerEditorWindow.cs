@@ -6,7 +6,7 @@ using UnityEngine;
 using WWFramework.Extension;
 using WWFramework.UI.Editor;
 
-namespace WWFramework.Optimazation.Editor
+namespace WWFramework.Optimization.Editor
 {
     public class AssetAnalyzerEditorWindow: BaseEditorWindow
     {

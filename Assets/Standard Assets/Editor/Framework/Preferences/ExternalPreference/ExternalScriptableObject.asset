@@ -16,3 +16,5 @@ MonoBehaviour:
     Extension: .shader
   - ToolPath: D:\Sublime Text\sublime_text.exe
     Extension: .mat
+  - ToolPath: D:\Sublime Text\sublime_text.exe
+    Extension: .prefab

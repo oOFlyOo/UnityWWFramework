@@ -1,4 +1,5 @@
 ﻿
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using WWFramework.Helper;
@@ -9,24 +10,26 @@ namespace WWFramework.Util
     {
         private string _fileName;
         private List<string> _arguments;
+        private bool _createNoWindow;
         private bool _useShell;
 
-        private ProcessStartInfo _processStartInfo;
+        private bool _hasInit;
 
         private SystemProcess()
         {
         }
 
-        public static SystemProcess CreateProcess(bool useShell)
+        public static SystemProcess CreateProcess(bool createNoWindow = false, bool useShell = false)
         {
-            return CreateProcess(AssetHelper.DefaultCommand, useShell);
+            return CreateProcess(null, createNoWindow, useShell);
         }
 
-        public static SystemProcess CreateProcess(string fileName, bool useShell)
+        public static SystemProcess CreateProcess(string fileName, bool createNoWindow = false, bool useShell = false)
         {
             var process = new SystemProcess()
             {
                 _fileName = fileName,
+                _createNoWindow = createNoWindow,
                 _useShell = useShell,
                 _arguments = new List<string>(),
             };
@@ -44,23 +47,57 @@ namespace WWFramework.Util
             AppendArgument(string.Format("\"{0}\"", path));
         }
 
-        private void InitProcessStartInfo()
+        private Process InitProcess()
         {
-            _processStartInfo = new ProcessStartInfo()
+            if (_hasInit)
             {
-                FileName = _fileName,
-                Arguments = string.Join(" ", _arguments.ToArray()),
+                return null;
+            }
+            _hasInit = true;
+
+            var info = new ProcessStartInfo()
+            {
+                CreateNoWindow = _createNoWindow,
                 UseShellExecute = _useShell,
+                ErrorDialog = true,
+                RedirectStandardOutput = !_useShell,
+                RedirectStandardError = !_useShell,
             };
+
+            Process process;
+            if (string.IsNullOrEmpty(_fileName))
+            {
+                info.FileName = AssetHelper.DefaultCommand;
+                info.RedirectStandardInput = true;
+
+                process = Process.Start(info);
+
+                // win下加个换行否则乱码
+                process.StandardInput.WriteLine();
+                process.StandardInput.WriteLine("chcp 65001");
+                if (_arguments != null)
+                {
+                    process.StandardInput.WriteLine(string.Join(" ", _arguments.ToArray()));
+                }
+                // 运行为退出程序
+                process.StandardInput.WriteLine("exit");
+            }
+            else
+            {
+                info.FileName = _fileName;
+                info.Arguments = string.Join(" ", _arguments.ToArray());
+
+                process = Process.Start(info);
+            }
+
+            return process;
         }
 
         public void Start()
         {
-            if (_processStartInfo == null)
+            if (!_hasInit)
             {
-                InitProcessStartInfo();
-
-                Process.Start(_processStartInfo);
+                InitProcess();
             }
         }
 
@@ -69,11 +106,9 @@ namespace WWFramework.Util
         {
             var exitCode = 0;
 
-            if (_processStartInfo == null)
+            if (!_hasInit)
             {
-                InitProcessStartInfo();
-
-                var process = Process.Start(_processStartInfo);
+                var process = InitProcess();
                 result = process.StandardOutput.ReadToEnd();
                 error = process.StandardError.ReadToEnd();
                 process.WaitForExit();
@@ -86,6 +121,20 @@ namespace WWFramework.Util
             }
 
             return exitCode;
+        }
+
+
+        public string StartAndChek(int exitCode = 0)
+        {
+            string result;
+            string error;
+            var code = StartAndWaitForExit(out result, out error);
+            if (code != exitCode)
+            {
+                throw new Exception(string.Format("Process Exit {0} {1}\n{2}", code, error, result));
+            }
+
+            return result;
         }
     }
 }

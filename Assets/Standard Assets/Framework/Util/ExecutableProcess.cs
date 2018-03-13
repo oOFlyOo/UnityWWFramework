@@ -6,7 +6,7 @@ using WWFramework.Helper;
 
 namespace WWFramework.Util
 {
-    public class SystemProcess
+    public class ExecutableProcess
     {
         private string _fileName;
         private List<string> _arguments;
@@ -15,18 +15,18 @@ namespace WWFramework.Util
 
         private bool _hasInit;
 
-        private SystemProcess()
+        private ExecutableProcess()
         {
         }
 
-        public static SystemProcess CreateProcess(bool createNoWindow = false, bool useShell = false)
+        public static ExecutableProcess CreateProcess(bool createNoWindow = false, bool useShell = false)
         {
             return CreateProcess(null, createNoWindow, useShell);
         }
 
-        public static SystemProcess CreateProcess(string fileName, bool createNoWindow = false, bool useShell = false)
+        public static ExecutableProcess CreateProcess(string fileName, bool createNoWindow = false, bool useShell = false)
         {
-            var process = new SystemProcess()
+            var process = new ExecutableProcess()
             {
                 _fileName = fileName,
                 _createNoWindow = createNoWindow,

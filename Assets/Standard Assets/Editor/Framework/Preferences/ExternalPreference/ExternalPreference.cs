@@ -118,7 +118,7 @@ namespace WWFramework.Preference.Editor
                     }
                     else
                     {
-                        var process = SystemProcess.CreateProcess(externalTool.ToolPath, false);
+                        var process = ExecutableProcess.CreateProcess(externalTool.ToolPath, false);
                         process.AppendPath(path);
                         process.Start();
 //                        Process.Start(externalTool.ToolPath, path);

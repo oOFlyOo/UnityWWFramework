@@ -10,21 +10,21 @@ namespace WWFramework.Optimization.Editor
 {
     public class AssetAnalyzerEditorWindow: BaseEditorWindow
     {
-        private List<BaseAssetAnalyzer> _assetAnalyzers;
-        private List<BaseAssetAnalyzer> AssetAnalyzers
+        private List<IAssetAnalyzer> _assetAnalyzers;
+        private List<IAssetAnalyzer> AssetAnalyzers
         {
             get
             {
                 if (_assetAnalyzers == null)
                 {
-                    _assetAnalyzers = new List<BaseAssetAnalyzer>();
+                    _assetAnalyzers = new List<IAssetAnalyzer>();
 
-                    var analyzerType = typeof (BaseAssetAnalyzer);
+                    var analyzerType = typeof (IAssetAnalyzer);
                     foreach (var type in analyzerType.Assembly.GetTypes())
                     {
-                        if (type.IsSubclassOf(analyzerType))
+                        if (analyzerType.IsAssignableFrom(type) && analyzerType != type && !type.IsAbstract)
                         {
-                            var ins = (BaseAssetAnalyzer)Activator.CreateInstance(type);
+                            var ins = (IAssetAnalyzer)Activator.CreateInstance(type);
                             _assetAnalyzers.Add(ins);
                         }
                     }
@@ -54,7 +54,7 @@ namespace WWFramework.Optimization.Editor
 
         private int _curAnalyzerIndex;
 
-        private BaseAssetAnalyzer CurAnalyzer
+        private IAssetAnalyzer CurAnalyzer
         {
             get { return AssetAnalyzers[_curAnalyzerIndex]; }
         }
@@ -74,9 +74,15 @@ namespace WWFramework.Optimization.Editor
             _curAnalyzerIndex = EditorUIHelper.Popup("选择分析器：", _curAnalyzerIndex, AssetAnalyzerStrs);
 
             EditorUIHelper.Space();
-            EditorUIHelper.Button("执行", () =>
+            EditorUIHelper.Button("搜索", () =>
             {
-                CurAnalyzer.Analyse(Selection.GetFiltered<UnityEngine.Object>(SelectionMode.DeepAssets));
+                CurAnalyzer.Analyse(Selection.GetFiltered(typeof(UnityEngine.Object),SelectionMode.DeepAssets));
+            });
+
+            EditorUIHelper.Space();
+            EditorUIHelper.Button("修正全部", () =>
+            {
+                CurAnalyzer.CorrectAll();
             });
 
             EditorUIHelper.Space();

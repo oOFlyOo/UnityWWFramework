@@ -5,29 +5,35 @@ using UnityEngine;
 
 namespace WWFramework.Optimization.Editor
 {
-    public abstract class BaseAssetAnalyzer
+    public interface IAssetAnalyzer
+    {
+        void Analyse(Object[] assets);
+        void ShowResult();
+        void CorrectAll();
+    }
+
+    public abstract class BaseAssetAnalyzer<T>: IAssetAnalyzer
     {
         public abstract void Analyse(Object[] assets);
+
 
         public virtual void ShowResult()
         {
         }
 
+        public abstract void CorrectAll();
 
-        protected List<T> GetObjects<T>(Object[] assets) where T: Object
+        protected List<T> GetObjects(Object[] assets)
         {
-            if (assets != null && assets.Length > 1)
-            {
-                return GetFilterObjects(assets).Select(o => o as T).Where(arg1 => arg1 != null).ToList();
-            }
-            else
-            {
-                return GetProjectObjects().ConvertAll(input => (T) input);
-            }
+            var objs = assets != null ? GetProjectObjects() : GetFilterObjects(assets);
+
+            return objs.Where(arg1 => arg1 != null).ToList();
         }
 
-        protected abstract List<Object> GetFilterObjects(Object[] assets);
+        protected abstract List<T> GetFilterObjects(Object[] assets);
 
-        protected abstract List<Object> GetProjectObjects();
+        protected abstract List<T> GetProjectObjects();
+
+        protected abstract bool IsSickAsset(T obj, bool needCorrect = false, bool needSave = true);
     }
 }

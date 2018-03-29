@@ -1,8 +1,6 @@
 ﻿
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEngine;
 using WWFramework.Helper.Editor;
@@ -11,47 +9,15 @@ using WWFramework.UI.Editor;
 
 namespace WWFramework.Optimaztion.Editor
 {
-    public class MaterialAnalyzer: BaseAssetAnalyzer
+    public class MaterialAnalyzer: BaseAssetAnalyzer<Material>
     {
-        private class SickMaterial
-        {
-            public Material Mat;
-            public string SickName;
-        }
-
-        private List<SickMaterial> _sickMaterials = new List<SickMaterial>();
+        private List<Material> _sickMaterials = new List<Material>();
 
         public override void Analyse(Object[] assets)
         {
-            var mats = GetObjects<Material>(assets);
-            _sickMaterials.Clear();
+            var mats = GetObjects(assets);
 
-            foreach (var mat in mats)
-            {
-                var text = File.ReadAllText(AssetDatabase.GetAssetPath(mat));
-                var shader = mat.shader;
-                var texNames = new HashSet<string>();
-                foreach (Match match in Regex.Matches(text, @"(name:|-) (\w+).+?m_Texture", RegexOptions.Singleline))
-                {
-                    texNames.Add(match.Groups[2].Value);
-                }
-                for (int i = ShaderUtil.GetPropertyCount(shader) - 1; i >= 0; i--)
-                {
-                    if (ShaderUtil.GetPropertyType(shader, i) == ShaderUtil.ShaderPropertyType.TexEnv)
-                    {
-                        var name = ShaderUtil.GetPropertyName(shader, i);
-                        texNames.Remove(name);
-                    }
-                }
-                foreach (var texName in texNames)
-                {
-                    _sickMaterials.Add(new SickMaterial()
-                    {
-                        Mat = mat,
-                        SickName = texName,
-                    });
-                }
-            }
+            _sickMaterials = mats.Where(mat => IsSickAsset(mat)).ToList();
         }
 
         public override void ShowResult()
@@ -62,22 +28,81 @@ namespace WWFramework.Optimaztion.Editor
             {
                 EditorUIHelper.BeginHorizontal();
                 {
-                    EditorUIHelper.ObjectField(string.Empty, sickMaterial.Mat);
-                    EditorUIHelper.LabelField(sickMaterial.SickName);
+                    EditorUIHelper.ObjectField(string.Empty, sickMaterial);
+                    EditorUIHelper.Space();
+                    EditorUIHelper.Button("修正", () => 
+                    {
+                        IsSickAsset(sickMaterial, true);
+                    });
                 }
                 EditorUIHelper.EndHorizontal();
             }
         }
 
-        protected override List<Object> GetFilterObjects(Object[] assets)
+        public override void CorrectAll()
         {
-            return assets.Where(o => o as Material).ToList();
+            foreach (var mat in _sickMaterials)
+            {
+                IsSickAsset(mat, true, false);
+            }
+            AssetDatabase.SaveAssets();
         }
 
-        protected override List<Object> GetProjectObjects()
+        protected override List<Material> GetFilterObjects(Object[] assets)
+        {
+            return assets.ToList().ConvertAll(input => input as Material);
+        }
+
+        protected override List<Material> GetProjectObjects()
         {
             return EditorAssetHelper.FindAssetsPaths(EditorAssetHelper.SearchFilter.Material)
-                    .ConvertAll(AssetDatabase.LoadMainAssetAtPath);
+                    .ConvertAll(input => AssetDatabase.LoadAssetAtPath<Material>(input));
+        }
+
+        protected override bool IsSickAsset(Material obj, bool needCorrect = false, bool needSave = true)
+        {
+            var correct = false;
+
+            var matInfo = new SerializedObject(obj);
+            var propArry = matInfo.FindProperty("m_SavedProperties");
+            propArry.Next(true);
+            do
+            {
+                if (!propArry.isArray)
+                {
+                    continue;
+                }
+
+                for (int i = propArry.arraySize - 1; i >= 0; --i)
+                {
+                    var prop =
+                        propArry.GetArrayElementAtIndex(i).FindPropertyRelative("first").FindPropertyRelative("name");
+                    if (!obj.HasProperty(prop.stringValue))
+                    {
+                        if (needCorrect)
+                        {
+                            correct = true;
+                            propArry.DeleteArrayElementAtIndex(i);
+                        }
+                        else
+                        {
+                            return true;
+                        }
+                    }
+                }
+            } while (propArry.Next(false));
+
+            if (correct)
+            {
+                matInfo.ApplyModifiedProperties();
+                matInfo.UpdateIfDirtyOrScript();
+                if (needSave)
+                {
+                    AssetDatabase.SaveAssets();
+                }
+            }
+
+            return false;
         }
     }
 }

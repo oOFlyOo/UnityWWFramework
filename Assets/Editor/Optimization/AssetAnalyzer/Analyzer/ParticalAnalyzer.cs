@@ -7,33 +7,31 @@ using WWFramework.Helper.Editor;
 
 namespace WWFramework.Optimization.Editor
 {
-    public class ParticalAnalyzer:BaseAssetAnalyzer
+    public class ParticalAnalyzer:BaseAssetAnalyzer<GameObject>
     {
-        private class SickPartical
-        {
-            public ParticleSystem Partical;
-        }
-
-
         public override void Analyse(Object[] assets)
-        {
-        }
-
-
-        public override void ShowResult()
-        {
-            base.ShowResult();
-        }
-
-        protected override List<Object> GetFilterObjects(Object[] assets)
         {
             throw new System.NotImplementedException();
         }
 
-        protected override List<Object> GetProjectObjects()
+        public override void CorrectAll()
         {
-            return EditorAssetHelper.FindAssetsPaths(EditorAssetHelper.SearchFilter.Prefab)
-                                .ConvertAll(AssetDatabase.LoadMainAssetAtPath);
+            throw new System.NotImplementedException();
+        }
+
+        protected override List<GameObject> GetFilterObjects(Object[] assets)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        protected override List<GameObject> GetProjectObjects()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        protected override bool IsSickAsset(GameObject obj, bool needCorrect = false, bool needSave = true)
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

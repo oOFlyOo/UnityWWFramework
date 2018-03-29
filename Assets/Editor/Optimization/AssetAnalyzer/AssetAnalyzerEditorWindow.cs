@@ -65,7 +65,7 @@ namespace WWFramework.Optimization.Editor
         [MenuItem("WWFramework/AssetAnalyzer/Window")]
         private static AssetAnalyzerEditorWindow GetWindow()
         {
-            return GetWindow<AssetAnalyzerEditorWindow>();
+            return GetWindowExt<AssetAnalyzerEditorWindow>();
         }
 
 

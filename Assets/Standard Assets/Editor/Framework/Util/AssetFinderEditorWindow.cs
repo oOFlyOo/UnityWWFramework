@@ -11,7 +11,7 @@ namespace WWFramework.Util.Editor
         [MenuItem("WWFramework/AssetFinder/Window")]
         private static AssetFinderEditorWindow GetWindow()
         {
-            return GetWindow<AssetFinderEditorWindow>();
+            return GetWindowExt<AssetFinderEditorWindow>();
         }
 
         protected override void CustomOnGUI()

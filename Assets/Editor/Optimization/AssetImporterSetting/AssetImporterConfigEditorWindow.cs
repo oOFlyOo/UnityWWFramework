@@ -90,7 +90,7 @@ namespace WWFramework.Optimization.Editor
         [MenuItem("WWFramework/AssetImporterConfig/Window")]
         private static AssetImporterConfigEditorWindow GetWindow()
         {
-            return GetWindow<AssetImporterConfigEditorWindow>();
+            return GetWindowExt<AssetImporterConfigEditorWindow>();
         }
 
 

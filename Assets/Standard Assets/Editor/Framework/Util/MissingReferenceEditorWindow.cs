@@ -12,7 +12,7 @@ namespace WWFramework.Util.Editor
         [MenuItem("WWFramework/MissingReference/Window")]
         public static MissingReferenceEditorWindow GetWindow()
         {
-            return GetWindow<MissingReferenceEditorWindow>();
+            return GetWindowExt<MissingReferenceEditorWindow>();
         }
 
         protected override void CustomOnGUI()

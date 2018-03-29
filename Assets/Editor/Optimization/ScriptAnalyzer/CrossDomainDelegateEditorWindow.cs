@@ -56,7 +56,7 @@ namespace WWFramework.Optimization.Editor
         [MenuItem("WWFramework/CrossDomainDelegate/Window")]
         private static CrossDomainDelegateEditorWindow GetWindow()
         {
-            return GetWindow<CrossDomainDelegateEditorWindow>();
+            return GetWindowExt<CrossDomainDelegateEditorWindow>();
         }
 
 

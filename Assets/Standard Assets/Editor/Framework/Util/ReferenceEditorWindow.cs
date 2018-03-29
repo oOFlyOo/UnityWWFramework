@@ -13,7 +13,7 @@ namespace WWFramework.Util.Editor
         [MenuItem("WWFramework/Reference/Window")]
         private static ReferenceEditorWindow GetWindow()
         {
-            return GetWindow<ReferenceEditorWindow>();
+            return GetWindowExt<ReferenceEditorWindow>();
         }
 
         protected override void CustomOnGUI()

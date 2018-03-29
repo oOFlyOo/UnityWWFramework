@@ -24,7 +24,7 @@ namespace WWFramework.Util.Editor
 
         private static void Open(List<Object> goList, string msg)
         {
-            var ew = GetWindow<SelectingEditorWindow>();
+            var ew = GetWindowExt<SelectingEditorWindow>();
             ew.SetData(goList, msg);
         }
 

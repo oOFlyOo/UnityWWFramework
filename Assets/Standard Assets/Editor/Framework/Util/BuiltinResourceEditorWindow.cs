@@ -9,7 +9,7 @@ namespace WWFramework.Util.Editor
         [MenuItem("WWFramework/BuiltinResource/Window")]
         private static BuiltinResourceEditorWindow GetWindow()
         {
-            return GetWindow<BuiltinResourceEditorWindow>();
+            return GetWindowExt<BuiltinResourceEditorWindow>();
         }
 
         protected override void CustomOnGUI()

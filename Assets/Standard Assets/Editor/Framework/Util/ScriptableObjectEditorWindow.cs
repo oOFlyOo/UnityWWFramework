@@ -28,7 +28,7 @@ namespace WWFramework.Util.Editor
         [MenuItem("WWFramework/ScriptableObject/Window")]
         public static ScriptableObjectEditorWindow GetWindow()
         {
-            return GetWindow<ScriptableObjectEditorWindow>();
+            return GetWindowExt<ScriptableObjectEditorWindow>();
         }
 
         protected override void CustomOnGUI()

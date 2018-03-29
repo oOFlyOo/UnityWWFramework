@@ -7,7 +7,7 @@ namespace WWFramework.UI.Editor
     {
         protected Vector2 _scrollPos;
 
-        protected new static T GetWindow<T>() where T : BaseEditorWindow
+        protected static T GetWindowExt<T>() where T : BaseEditorWindow
         {
             return GetWindow<T>(typeof(T).Name.Replace("EditorWindow", ""));
         }

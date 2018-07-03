@@ -1,4 +1,5 @@
 ﻿
+using System;
 using UnityEngine;
 
 namespace WWFramework.Extension
@@ -14,6 +15,21 @@ namespace WWFramework.Extension
             }
 
             return com;
+        }
+
+        public static string GetHierarchyPath(this Transform trans, Transform root = null, bool includeRoot = true)
+        {
+            if (trans == null || (trans == root && !includeRoot))
+            {
+                return String.Empty;
+            }
+
+            if (trans != root && trans.parent != null)
+            {
+                return string.Format("{0}/{1}", trans.parent.GetHierarchyPath(root), trans.name);
+            }
+
+            return trans.name;
         }
     }
 }

@@ -6,18 +6,18 @@ namespace WWFramework.Helper
     public static class IOHelper
     {
         #region 路径操作
-        private static string _currentDirectory;
-        public static string CurrentDirectory
+        private static string _projectDirectory;
+        public static string ProjectDirectory
         {
             get
             {
-                if (_currentDirectory == null)
+                if (string.IsNullOrEmpty(_projectDirectory))
                 {
-                    _currentDirectory = Directory.GetCurrentDirectory().Replace("\\", "/");
-                    _currentDirectory.TrimEnd('/');
+                    _projectDirectory = Directory.GetCurrentDirectory().Replace("\\", "/");
+                    _projectDirectory.TrimEnd('/');
                 }
 
-                return _currentDirectory;
+                return _projectDirectory;
             }
         }
 
@@ -35,7 +35,7 @@ namespace WWFramework.Helper
         /// <returns></returns>
         public static string GetRelativePath(string fullPath, string rootPath = null)
         {
-            rootPath = rootPath ?? CurrentDirectory;
+            rootPath = rootPath ?? ProjectDirectory;
 
             return fullPath.Remove(0, rootPath.Length + 1);
         }

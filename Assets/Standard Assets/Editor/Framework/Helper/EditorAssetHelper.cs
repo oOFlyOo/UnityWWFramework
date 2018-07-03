@@ -2,19 +2,56 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Audio;
 using WWFramework.Extension;
 using WWFramework.Reflection;
+using Debug = System.Diagnostics.Debug;
 using Object = UnityEngine.Object;
 
 namespace WWFramework.Helper.Editor
 {
     public static class EditorAssetHelper
     {
+        public static void SelectObject(Object obj)
+        {
+            Selection.activeObject = obj;
+            EditorGUIUtility.PingObject(obj);
+        }
+
+        public static void RevealInFinder(string path)
+        {
+            if (Application.platform == RuntimePlatform.WindowsEditor)
+            {
+                path = path.Replace("/", "\\");
+                Process.Start("explorer.exe", "/select," + path);
+            }
+            else
+            {
+                EditorUtility.RevealInFinder(path);
+            }
+        }
+
+        private static string _projectTempPath;
+        public static string ProjectTempPath
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(_projectTempPath))
+                {
+                    _projectTempPath = IOHelper.ProjectDirectory + "/Temp";
+                }
+
+                return _projectTempPath;
+            }
+        }
+
         #region 资源查找
+
         public enum SearchFilter
         {
             All,
@@ -36,26 +73,103 @@ namespace WWFramework.Helper.Editor
             VideoClip,
         }
 
+        private static Dictionary<SearchFilter, Type> _searchFilterTypes = new Dictionary<SearchFilter, Type>()
+        {
+            {SearchFilter.AnimationClip, typeof(AnimationClip)},
+            {SearchFilter.AudioClip, typeof(AudioClip)},
+            {SearchFilter.AudioMixer, typeof(AudioMixer)},
+            {SearchFilter.Font, typeof(Font)},
+            {SearchFilter.GUISkin, typeof(GUISkin)},
+            {SearchFilter.Material, typeof(Material)},
+            {SearchFilter.Mesh, typeof(Mesh)},
+            {SearchFilter.PhysicMaterial, typeof(PhysicMaterial)},
+            {SearchFilter.Scene, typeof(SceneAsset)},
+//            {SearchFilter.Script, typeof(MonoScript) },
+            {SearchFilter.Shader, typeof(Shader)},
+            {SearchFilter.Sprite, typeof(Sprite)},
+            {SearchFilter.Texture, typeof(Texture)},
+        };
+
+        public static bool IsMatch(Object obj, SearchFilter filter)
+        {
+            if (obj == null)
+            {
+                return false;
+            }
+
+            if (filter == SearchFilter.All)
+            {
+                return true;
+            }
+            else
+            {
+                var objType = obj.GetType();
+
+                if (typeof(Component).IsAssignableFrom(objType) && !typeof(MonoBehaviour).IsAssignableFrom(objType))
+                {
+                    return false;
+                }
+
+                foreach (var keyValue in _searchFilterTypes)
+                {
+                    if (keyValue.Value.IsAssignableFrom(objType))
+                    {
+                        return keyValue.Key == filter;
+                    }
+                }
+
+                return IsMatch(AssetDatabase.GetAssetPath(obj), filter);
+            }
+        }
+
+        private static bool IsMatch(string path, SearchFilter filter)
+        {
+            if (String.IsNullOrEmpty(path))
+            {
+                return false;
+            }
+
+            switch (filter)
+            {
+                case SearchFilter.Model:
+                    {
+                        return path.EndsWith(".FBX");
+                    }
+                case SearchFilter.Prefab:
+                    {
+                        return path.EndsWith(".prefab");
+                    }
+                case SearchFilter.Script:
+                    {
+                        return path.EndsWith(".cs");
+                    }
+            }
+
+            return false;
+        }
+
         public static string[] FindAssets(SearchFilter filter, params string[] searchInFolders)
         {
-            var filterStr = filter != SearchFilter.All ? string.Format("t:{0}", filter) : null;
+            var filterStr = filter != SearchFilter.All ? String.Format("t:{0}", filter) : null;
             return AssetDatabase.FindAssets(filterStr, searchInFolders.ParamsFixing());
         }
 
         public static List<string> FindAssetsPaths(SearchFilter filter, params string[] searchInFolders)
         {
-            return FindAssets(filter, searchInFolders.ParamsFixing()).Select(AssetDatabase.GUIDToAssetPath).ToList();
+            return FindAssets(filter, searchInFolders.ParamsFixing()).Select(s => AssetDatabase.GUIDToAssetPath(s))
+                .ToList();
         }
 
         public static MonoScript FindScriptableObject(Type type)
         {
-            foreach (var monoScript in EditorAssetHelper.FindScriptableObjects())
+            foreach (var monoScript in FindScriptableObjects())
             {
                 if (monoScript.GetClass() == type)
                 {
                     return monoScript;
                 }
             }
+
             return null;
         }
 
@@ -80,7 +194,8 @@ namespace WWFramework.Helper.Editor
             {
                 var script = AssetDatabase.LoadAssetAtPath<MonoScript>(path);
                 var type = script.GetClass();
-                if (type != null && type.IsSubclassOf(scriptObjType) && !type.IsSubclassOf(editorType) && !type.IsSubclassOf(editorWindowType))
+                if (type != null && type.IsSubclassOf(scriptObjType) && !type.IsSubclassOf(editorType) &&
+                    !type.IsSubclassOf(editorWindowType))
                 {
                     scriptList.Add(script);
                 }
@@ -162,10 +277,12 @@ namespace WWFramework.Helper.Editor
 
 
         }
+
         #endregion
 
 
         #region 资源创建
+
         public static T CreateScriptableObjectAsset<T>(string path) where T : ScriptableObject
         {
             return CreateScriptableObjectAsset(typeof(T), path) as T;
@@ -178,9 +295,11 @@ namespace WWFramework.Helper.Editor
 
             return asset;
         }
+
         #endregion
 
         #region 内置资源
+
         public static Type[] BuiltinAssetTypes =
         {
             typeof(Mesh),
@@ -209,8 +328,22 @@ namespace WWFramework.Helper.Editor
                     foreach (var builtinAssetType in BuiltinAssetTypes)
                     {
                         var name = builtinAssetType.ToString().Substring(builtinAssetType.Namespace.Length + 1);
-                        var type = unityType.InvokeStaticMethod("FindTypeByName", ReflectionExtension.DefaultFlags, name);
-                        var id = unityType.GetPropertyValue("persistentTypeID", type);
+
+                        object id = null;
+                        if (unityType != null)
+                        {
+                            var type = unityType.InvokeStaticMethod("FindTypeByName", ReflectionExtension.DefaultFlags,
+                                name);
+                            id = unityType.GetPropertyValue("persistentTypeID", type);
+                        }
+                        else
+                        {
+                            var baseObjectTools =
+                                utilityType.GetSameAssemblyType("UnityEditorInternal.BaseObjectTools");
+                            id = baseObjectTools.InvokeStaticMethod("StringToClassID", ReflectionExtension.DefaultFlags,
+                                name);
+                        }
+
                         var resArray = utilityType.InvokeStaticMethod("GetBuiltinResourceList",
                             BindingFlags.Static | BindingFlags.NonPublic, id) as Array;
                         foreach (var res in resArray)
@@ -233,13 +366,13 @@ namespace WWFramework.Helper.Editor
 
         public static int GetInstanceIDFromGUID(string guid)
         {
-            return (int) typeof (AssetDatabase).InvokeStaticMethod("GetInstanceIDFromGUID",
+            return (int)typeof(AssetDatabase).InvokeStaticMethod("GetInstanceIDFromGUID",
                 BindingFlags.Static | BindingFlags.NonPublic, guid);
         }
 
         public static Object GUIDToObject(string guid)
         {
-            if (string.IsNullOrEmpty(guid))
+            if (String.IsNullOrEmpty(guid))
             {
                 return null;
             }
@@ -251,16 +384,18 @@ namespace WWFramework.Helper.Editor
             }
 
             var path = AssetDatabase.GUIDToAssetPath(guid);
-            if (string.IsNullOrEmpty(path))
+            if (String.IsNullOrEmpty(path))
             {
                 return null;
             }
 
             return AssetDatabase.LoadMainAssetAtPath(path);
         }
+
         #endregion
 
         #region 获取一些路径相关
+
         [MenuItem("Assets/Path/CopyRelativePath", true)]
         [MenuItem("Assets/Path/CopyAbsolutionPath", true)]
         private static bool CopyRelativePathCheck()
@@ -289,50 +424,140 @@ namespace WWFramework.Helper.Editor
 
         public static string GetLibraryDll(string name)
         {
-            return string.Format("{0}/Library/ScriptAssemblies/{1}.dll", IOHelper.CurrentDirectory, name);
+            return String.Format("{0}/Library/ScriptAssemblies/{1}.dll", IOHelper.ProjectDirectory, name);
         }
+
         #endregion
 
+        #region 图片相关
         public static void GetTextureSize(TextureImporter importer, out int width, out int height)
         {
             object[] args = new object[2] { 0, 0 };
-
-            importer.GetType().InvokeMethod("GetWidthAndHeight", importer, BindingFlags.NonPublic | BindingFlags.Instance, args);
-
+            var method = typeof(TextureImporter).GetMethod("GetWidthAndHeight", BindingFlags.NonPublic | BindingFlags.Instance);
+            method.Invoke(importer, args);
             width = (int)args[0];
             height = (int)args[1];
         }
 
-        public static bool IsTextureMultipleOfFour(TextureImporter importer)
+        public enum TextureSizeFeatureLevel
+        {
+            None,
+            Multiple4,
+            POT,
+            SquarePOT,
+        }
+
+        public static TextureSizeFeatureLevel GetTextureSizeFearture(string assetPath)
+        {
+            return GetTextureSizeFearture((TextureImporter)AssetImporter.GetAtPath(assetPath));
+        }
+
+        public static TextureSizeFeatureLevel GetTextureSizeFearture(TextureImporter importer)
         {
             int width;
             int height;
             GetTextureSize(importer, out width, out height);
-            int result1;
-            Math.DivRem(width, 4, out result1);
-            int result2;
-            Math.DivRem(height, 4, out result2);
 
-            return result1 == 0 && result2 == 0;
-        }
-
-        public static void SelectObject(Object obj)
-        {
-            Selection.activeObject = obj;
-            EditorGUIUtility.PingObject(obj);
-        }
-
-        public static void RevealInFinder(string path)
-        {
-            if (Application.platform == RuntimePlatform.WindowsEditor)
+            if (width % 4 == 0 && height % 4 == 0)
             {
-                path = path.Replace("/", "\\");
-                Process.Start("explorer.exe", "/select," + path);
+                var potW = (width & (width - 1)) == 0;
+                var potH = (height & (height - 1)) == 0;
+
+                if (potW && potH)
+                {
+                    if (width == height)
+                    {
+                        return TextureSizeFeatureLevel.SquarePOT;
+                    }
+
+                    return TextureSizeFeatureLevel.POT;
+                }
+
+                return TextureSizeFeatureLevel.Multiple4;
+            }
+
+            return TextureSizeFeatureLevel.None;
+        }
+
+        private const int AstcAlphaInterval = 6;
+
+        public static TextureImporterFormat FixAstcAlphaFormat(TextureImporterFormat format, bool hasAlpha)
+        {
+            if (hasAlpha)
+            {
+                if (format >= TextureImporterFormat.ASTC_RGB_4x4 && format <= TextureImporterFormat.ASTC_RGB_12x12)
+                {
+                    return format + AstcAlphaInterval;
+                }
             }
             else
             {
-                EditorUtility.RevealInFinder(path);
+                if (format >= TextureImporterFormat.ASTC_RGBA_4x4 && format <= TextureImporterFormat.ASTC_RGBA_12x12)
+                {
+                    return format - AstcAlphaInterval;
+                }
+            }
+
+            return format;
+        }
+
+        public static readonly string[] TextureSizeStrs = { "32", "64", "128", "256", "512", "1024", "2048" };
+        public static readonly int[] TextureSizes = { 32, 64, 128, 256, 512, 1024, 2048 };
+
+        #endregion
+
+        #region 模型
+        [MenuItem("Assets/Model/LogModelBonesCount")]
+        private static void LogModelBonesCount()
+        {
+            foreach (var obj in Selection.GetFiltered(typeof(Object), SelectionMode.DeepAssets))
+            {
+                var count = GetModelBonesCount(obj);
+                if (count > 0)
+                {
+                    UnityEngine.Debug.Log(String.Format("{0} Bones:{1}", obj.name, count));
+                }
             }
         }
+
+        public static int GetModelBonesCount(Object obj)
+        {
+            var count = 0;
+            var path = AssetDatabase.GetAssetPath(obj);
+            var importer = AssetImporter.GetAtPath(path) as ModelImporter;
+            if (importer != null)
+            {
+//                return importer.transformPaths.Length;
+
+                byte[] metaFileBytes = null;
+                var optimize = importer.optimizeGameObjects;
+                if (optimize)
+                {
+                    metaFileBytes = File.ReadAllBytes(AssetDatabase.GetTextMetaFilePathFromAssetPath(path));
+                    importer.optimizeGameObjects = false;
+                    importer.SaveAndReimport();
+                }
+
+                var skinnedMesh = ((GameObject)obj).GetComponentInChildren<SkinnedMeshRenderer>(true);
+                if (skinnedMesh != null)
+                {
+                    count = skinnedMesh.bones.Length;
+                }
+
+                if (metaFileBytes != null)
+                {
+                    File.WriteAllBytes(AssetDatabase.GetTextMetaFilePathFromAssetPath(path), metaFileBytes);
+                }
+            }
+            return count;
+        }
+        #endregion
+
+        #region 资源类型
+        public static bool IsMetaFile(string path)
+        {
+            return path.EndsWith(".meta");
+        }
+        #endregion
     }
 }

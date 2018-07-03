@@ -2,6 +2,7 @@
 using System;
 using UnityEditor;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace WWFramework.UI.Editor
 {
@@ -199,6 +200,13 @@ namespace WWFramework.UI.Editor
         #endregion
 
         #region 常用封装
+
+        public static bool Changed
+        {
+            get { return GUI.changed; }
+            set { GUI.changed = value; }
+        }
+
         public static void Space()
         {
             EditorGUILayout.Space();
@@ -354,7 +362,7 @@ namespace WWFramework.UI.Editor
         }
 
 
-        public static T EnumPopup<T>(string title, Enum selectedEnum, GUIStyle style = null)
+        public static T EnumPopup<T>(Enum selectedEnum, string title = "", GUIStyle style = null)
         {
             style = style ?? EditorStyles.popup;
             return (T)Convert.ChangeType(EditorGUILayout.EnumPopup(title, selectedEnum, style), typeof(T));
@@ -367,7 +375,7 @@ namespace WWFramework.UI.Editor
         }
 
 
-        public static UnityEngine.Object ObjectField(string title, UnityEngine.Object obj, Type type = null, bool allowSceneObjects = false)
+        public static Object ObjectField(Object obj, Type type = null, string title = "", bool allowSceneObjects = false)
         {
             return EditorGUILayout.ObjectField(title, obj, type, allowSceneObjects);
         }

@@ -137,7 +137,7 @@ namespace WWFramework.Util
                 {
                     _headers = new Dictionary<string, int>();
                     _headerLine = _table.Count;
-                    fields.Foreach((i, info) =>
+                    fields.ForEach((i, info) =>
                     {
                         var name = info.Name;
                         _headers[name] = i;
@@ -147,7 +147,7 @@ namespace WWFramework.Util
             }
             else
             {
-                fields.Foreach((i, info) =>
+                fields.ForEach((i, info) =>
                 {
                     var val = info.GetValue(obj).ToString();
                     if (val.IndexOfAny(QuotedChars) != -1)

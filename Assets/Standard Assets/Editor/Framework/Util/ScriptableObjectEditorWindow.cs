@@ -36,7 +36,7 @@ namespace WWFramework.Util.Editor
             foreach (var monoScript in ScriptList)
             {
                 EditorUIHelper.BeginHorizontal();
-                EditorUIHelper.ObjectField("", monoScript);
+                EditorUIHelper.ObjectField(monoScript);
                 EditorUIHelper.Button("创建", () => CreateScriptObject(monoScript));
                 EditorUIHelper.EndHorizontal();
                 EditorUIHelper.Space();

@@ -110,7 +110,7 @@ namespace WWFramework.Optimization.Editor
 
         protected virtual void ShowSettingPanel(V setting)
         {
-            setting.Match = EditorUIHelper.EnumPopup<MatchType>("Match", setting.Match);
+            setting.Match = EditorUIHelper.EnumPopup<MatchType>(setting.Match, "Match");
             setting.Path = EditorUIHelper.TextField("Path", setting.Path);
         }
 

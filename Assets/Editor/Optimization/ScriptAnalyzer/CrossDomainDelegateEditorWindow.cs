@@ -62,7 +62,7 @@ namespace WWFramework.Optimization.Editor
 
         protected override void CustomOnGUI()
         {
-            _showType = EditorUIHelper.EnumPopup<ShowType>("显示:", _showType);
+            _showType = EditorUIHelper.EnumPopup<ShowType>(_showType, "显示:");
 
             EditorUIHelper.Space();
             var dict = _showType == ShowType.All ? MonoFieldDict : UnSafeMonoFieldDict;
@@ -72,7 +72,7 @@ namespace WWFramework.Optimization.Editor
                 foreach (var keyValue in dict)
                 {
                     EditorUIHelper.Space();
-                    EditorUIHelper.ObjectField(string.Empty, keyValue.Key);
+                    EditorUIHelper.ObjectField(keyValue.Key);
                     foreach (var fieldInfo in keyValue.Value)
                     {
                         EditorUIHelper.LabelField(fieldInfo.Name);

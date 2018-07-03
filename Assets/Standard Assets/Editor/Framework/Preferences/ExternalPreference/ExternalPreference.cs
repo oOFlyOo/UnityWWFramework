@@ -38,6 +38,7 @@ namespace WWFramework.Preference.Editor
             }
         }
 
+        private static Vector2 _scroll;
 
         private static ExternalScriptableObject LoadScriptableObject()
         {
@@ -80,21 +81,26 @@ namespace WWFramework.Preference.Editor
             }
             EditorUIHelper.EndHorizontal();
 
-            foreach (var externalTool in ExternalSo.ToolList)
+            _scroll = EditorUIHelper.BeginScrollView(_scroll);
             {
-                EditorUIHelper.Space();
-                externalTool.ToolPath = EditorUIHelper.TextField("路径：", externalTool.ToolPath);
-
-                externalTool.Extension = EditorUIHelper.TextField("后缀：", externalTool.Extension);
-
-                EditorUIHelper.Button("删", () =>
+                foreach (var externalTool in ExternalSo.ToolList)
                 {
-                    EditorApplication.delayCall += () =>
+                    EditorUIHelper.Space();
+                    externalTool.ToolPath = EditorUIHelper.TextField("路径：", externalTool.ToolPath);
+
+                    externalTool.Extension = EditorUIHelper.TextField("后缀：", externalTool.Extension);
+
+                    var tool = externalTool;
+                    EditorUIHelper.Button("删", () =>
                     {
-                        ExternalSo.ToolList.Remove(externalTool);
-                    };
-                });
+                        EditorApplication.delayCall += () =>
+                        {
+                            ExternalSo.ToolList.Remove(tool);
+                        };
+                    });
+                }
             }
+            EditorUIHelper.EndScrollView();
         }
 
 

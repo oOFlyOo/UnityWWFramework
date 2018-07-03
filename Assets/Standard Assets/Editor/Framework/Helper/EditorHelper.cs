@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Reflection;
 using UnityEditor;
@@ -46,40 +48,29 @@ namespace WWFramework.Helper.Editor
         }
 
 
-        public static bool IsMetaFile(string path)
-        {
-            return path.EndsWith(".meta");
-        }
-
-
         public static List<string> GetReverseDependencies(string[] paths, string[] searchPaths = null)
         {
-            var includeList = new List<string>();
-            searchPaths = searchPaths ?? new[] { IOHelper.CurrentDirectory };
-            foreach (var searchPath in searchPaths)
+            var includeList = new HashSet<string>();
+            var stopWatch = new Stopwatch();
+            stopWatch.Start();
+            foreach (var guid in AssetDatabase.FindAssets("t:Material t:Model t:Prefab t:Scene", searchPaths))
             {
-                foreach (var file in Directory.GetFiles(searchPath, "*", SearchOption.AllDirectories))
+                var filePath = AssetDatabase.GUIDToAssetPath(guid);
+                var dependencies = AssetDatabase.GetDependencies(filePath, false);
+                foreach (var dependency in dependencies)
                 {
-                    if (IsMetaFile(file))
+                    if (paths.Any(dependency.Contains))
                     {
-                        continue;
-                    }
-
-                    var relativePath = IOHelper.GetRelativePath(file.Replace("\\", "/"));
-                    foreach (var dependency in AssetDatabase.GetDependencies(relativePath))
-                    {
-                        foreach (var path in paths)
-                        {
-                            if (dependency.Contains(path))
-                            {
-                                includeList.Add(relativePath);
-                            }
-                        }
+                        includeList.Add(filePath);
+                        break;
                     }
                 }
             }
 
-            return includeList;
+            stopWatch.Stop();
+            UnityEngine.Debug.Log(string.Format("反向查找依赖耗时：{0}", stopWatch.Elapsed.Seconds));
+
+            return includeList.ToList();
         }
 
 
@@ -92,6 +83,14 @@ namespace WWFramework.Helper.Editor
             so.FindProperty("m_GIWorkflowMode").intValue = auto ? 0 : 1;
             so.ApplyModifiedProperties();
         }
+
+
+        public static readonly Dictionary<BuildTarget, string> BuildTargetStrDict = new Dictionary<BuildTarget, string>()
+        {
+            {BuildTarget.StandaloneWindows, "Standalone"},
+            {BuildTarget.Android, "Android"},
+            {BuildTarget.iOS, "iPhone"},
+        };
 
         #endregion
 

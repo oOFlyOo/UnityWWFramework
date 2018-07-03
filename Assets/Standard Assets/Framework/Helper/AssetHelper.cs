@@ -7,9 +7,13 @@ namespace WWFramework.Helper
     {
         #region dll
         public const string AssemblyCSharpfirstpass = "Assembly-CSharp-firstpass";
+        public const string AssemblyCSharp = "Assembly-CSharp";
         #endregion
 
         #region DefaultCommand
+        public const string DefaultWinCommand = "cmd";
+        public const string DefaultMacCommand = "/bin/bash";
+
         public static string DefaultCommand
         {
             get
@@ -19,11 +23,11 @@ namespace WWFramework.Helper
                     case RuntimePlatform.WindowsEditor:
                     case RuntimePlatform.WindowsPlayer:
                         {
-                            return "cmd";
+                            return DefaultWinCommand;
                         }
                     case RuntimePlatform.OSXEditor:
                         {
-                            return "/bin/bash";
+                            return DefaultMacCommand;
                         }
                 }
                 return string.Empty;

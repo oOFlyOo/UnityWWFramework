@@ -11,6 +11,8 @@ namespace WWFramework.Util.Editor
     {
         private List<Object> _goList;
         private string _msg;
+        private string _search;
+        private EditorAssetHelper.SearchFilter _searchFilter;
 
         private Vector2 _ListScroll;
 
@@ -39,19 +41,34 @@ namespace WWFramework.Util.Editor
             if (_msg != null)
             {
                 EditorUIHelper.TitleField(_msg);
+                EditorUIHelper.Space();
             }
+
+            _search = EditorUIHelper.SearchCancelTextField(_search);
+            _searchFilter = EditorUIHelper.EnumPopup<EditorAssetHelper.SearchFilter>(_searchFilter, "SearchFilter");
 
             EditorUIHelper.Space();
             _ListScroll = EditorUIHelper.BeginScrollView(_ListScroll);
             {
-                var count = _goList.Count;
+                var count = _goList != null ? _goList.Count : 0;
+                var needSearch = !string.IsNullOrEmpty(_search);
                 for (int i = 0; i < count; i++)
                 {
                     var go = _goList[i];
+                    if (needSearch && !go.name.Contains(_search))
+                    {
+                        continue;
+                    }
+
+                    if (!EditorAssetHelper.IsMatch(go, _searchFilter))
+                    {
+                        continue;
+                    }
+
                     EditorUIHelper.DrawLine();
                     EditorUIHelper.BeginHorizontal();
                     {
-                        EditorUIHelper.ObjectField(string.Empty, go, null, true);
+                        EditorUIHelper.ObjectField(go, null, string.Empty, true);
                         EditorUIHelper.Button("选中", () => EditorAssetHelper.SelectObject(go));
                         var index = i;
                         EditorUIHelper.Button("移除", () => RemoveGo(index));

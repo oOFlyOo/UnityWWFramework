@@ -28,7 +28,7 @@ namespace WWFramework.Optimaztion.Editor
             {
                 EditorUIHelper.BeginHorizontal();
                 {
-                    EditorUIHelper.ObjectField(string.Empty, sickMaterial);
+                    EditorUIHelper.ObjectField(sickMaterial);
                     EditorUIHelper.Space();
                     EditorUIHelper.Button("修正", () => 
                     {

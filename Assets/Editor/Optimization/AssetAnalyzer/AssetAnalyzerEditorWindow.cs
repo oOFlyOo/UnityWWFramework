@@ -42,7 +42,7 @@ namespace WWFramework.Optimization.Editor
                 if (_assetAnalyzerStrs == null)
                 {
                     _assetAnalyzerStrs = new string[AssetAnalyzers.Count];
-                    AssetAnalyzers.Foreach((i, analyzer) =>
+                    AssetAnalyzers.ForEach((i, analyzer) =>
                     {
                         _assetAnalyzerStrs[i] = analyzer.GetType().Name;
                     });

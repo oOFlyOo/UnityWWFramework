@@ -162,7 +162,7 @@ public class ParticleSystemPreview : ObjectPreview
             }
         }
 
-        m_HasPreview = EditorUtility.IsPersistent(target) && HasStaticPreview();
+        m_HasPreview = target != null && EditorUtility.IsPersistent(target) && HasStaticPreview();
         if (m_Targets.Length != 1)
         {
             m_HasPreview = false;

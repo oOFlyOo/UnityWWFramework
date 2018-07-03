@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 
 namespace WWFramework.Extension
@@ -41,7 +40,7 @@ namespace WWFramework.Extension
         }
 
         [Obsolete("Unity 5.6 开始不再有 GC")]
-        public static void Foreach<TKey>(this List<TKey> list, Action<TKey> callback)
+        public static void ForEach<TKey>(this List<TKey> list, Action<TKey> callback)
         {
             var count = list.Count;
             for (int i = 0; i < count; i++)
@@ -52,7 +51,7 @@ namespace WWFramework.Extension
 
 
         [Obsolete("Unity 5.6 开始不再有 GC")]
-        public static void Foreach<TKey, TValue>(this Dictionary<TKey, TValue> dict, Action<TKey, TValue> callback)
+        public static void ForEach<TKey, TValue>(this Dictionary<TKey, TValue> dict, Action<TKey, TValue> callback)
         {
             if (dict != null)
             {
@@ -61,11 +60,46 @@ namespace WWFramework.Extension
                 {
                     callback(enumerator.Current.Key, enumerator.Current.Value);
                 }
+                enumerator.Dispose();
             }
         }
         #endregion
 
-        #region list
+        #region IEnumerable
+        public static void ForEach<T>(this IEnumerable<T> dataset, Action<T> callback)
+        {
+            if (dataset == null || callback == null)
+            {
+                return;
+            }
+
+            var enumerator = dataset.GetEnumerator();
+            while (enumerator.MoveNext())
+            {
+                callback(enumerator.Current);
+            }
+            enumerator.Dispose();
+        }
+
+        public static void ForEach<T>(this IEnumerable<T> dataset, Action<int, T> callback)
+        {
+            if (dataset == null || callback == null)
+            {
+                return;
+            }
+
+            var i = 0;
+            var enumerator = dataset.GetEnumerator();
+            while (enumerator.MoveNext())
+            {
+                callback(i, enumerator.Current);
+                i++;
+            }
+            enumerator.Dispose();
+        }
+        #endregion
+
+        #region List or Array
         public static bool AddIfNotExist<T>(this List<T> list, T item)
         {
             if (!list.Contains(item))
@@ -88,27 +122,6 @@ namespace WWFramework.Extension
             return array;
         }
 
-
-        public static void Foreach<TKey>(this List<TKey> list, Action<int, TKey> callback)
-        {
-            var count = list.Count;
-            for (int i = 0; i < count; i++)
-            {
-                callback(i, list[i]);
-            }
-        }
-
-
-        public static void Foreach<TKey>(this TKey[] list, Action<int, TKey> callback)
-        {
-            var count = list.Length;
-            for (int i = 0; i < count; i++)
-            {
-                callback(i, list[i]);
-            }
-        }
-
-
         public static T SafeGetValue<T>(this List<T> list, int index)
         {
             if (list != null && list.Count > index)
@@ -121,7 +134,7 @@ namespace WWFramework.Extension
         #endregion
 
 
-        #region dict
+        #region Dict
         public static V SafeGetValue<K, V>(this Dictionary<K, V> dict, K key)
         {
             if (dict != null)

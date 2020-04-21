@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Text;
 using UnityEngine;
 
 namespace WWFramework.Helper.Editor
@@ -17,32 +18,58 @@ namespace WWFramework.Helper.Editor
         public string TypeName;
         public string MethodName;
         public string Parameter;
+        public bool Executing;
 
-        public RecompileScript(MethodInfo method, object param = null)
+    public RecompileScript(MethodInfo method, params object[] args)
+    {
+        TypeName = method.DeclaringType.FullName;
+        MethodName = method.Name;
+        if (args.Length > 0)
         {
-            TypeName = method.DeclaringType.FullName;
-            MethodName = method.Name;
-            if (param != null)
+            var sb = new StringBuilder();
+            foreach (var arg in args)
             {
-                Parameter = param.GetType().FullName + "|" + param;
+                sb.AppendFormat("{0}|{1},", arg.GetType().FullName, arg);
             }
+            Parameter = sb.ToString().TrimEnd(',');
         }
+    }
 
-        public void Execute()
+    public void Execute()
+    {
+        if (!Executing)
         {
             var type = Type.GetType(TypeName);
-            object parameter = null;
+            object[] param = null;
+            Type[] paramTypes = null;
             if (!string.IsNullOrEmpty(Parameter))
             {
-                var strs = Parameter.Split('|');
-                var paramType = Type.GetType(strs[0]);
-                parameter = Convert.ChangeType(strs[1], paramType);
+                var args = Parameter.Split(',');
+                param = new object[args.Length];
+                paramTypes = new Type[args.Length];
+
+                for (int i = 0; i < args.Length; i++)
+                {
+                    var arg = args[i];
+                    var strs = arg.Split('|');
+
+                    var paramType = Type.GetType(strs[0]);
+                    var pa = Convert.ChangeType(strs[1], paramType);
+
+                    param[i] = pa;
+                    paramTypes[i] = paramType;
+                }
             }
-            var param = parameter == null ? null : new[] { parameter, };
-            var paramTypes = parameter == null ? new Type[0] : new[] { parameter.GetType(), };
+            else
+            {
+                paramTypes = new Type[0];
+            }
             var method = type.GetMethod(MethodName,
                 BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null, paramTypes, null);
             method.Invoke(null, param);
+
+            Executing = true;
+            }
         }
     }
 }

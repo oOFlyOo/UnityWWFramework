@@ -22,16 +22,16 @@ namespace WWFramework.Util.Editor
             _searchObject = EditorUIHelper.ObjectField(_searchObject, typeof(Object), "搜索：", true);
 
             EditorUIHelper.Space();
-            EditorUIHelper.Button("获取引用", CollectDependences);
-
-            EditorUIHelper.Space();
             EditorUIHelper.Button("获取引用（非内置）", ShowDependences);
-
-//            EditorUIHelper.Space();
-//            EditorUIHelper.Button("反向引用", CollectReverseDependences);
 
             EditorUIHelper.Space();
             EditorUIHelper.Button("反向引用（非内置）", ShowReverseDependences);
+
+            EditorUIHelper.Space();
+            EditorUIHelper.Button("获取引用", CollectDependences);
+
+            EditorUIHelper.Space();
+            EditorUIHelper.Button("反向引用", CollectReverseDependences);
 
             EditorUIHelper.Space();
             EditorUIHelper.Button("内置引用", ShowBuiltinDependences);
@@ -47,11 +47,17 @@ namespace WWFramework.Util.Editor
             SelectingEditorWindow.Show(AssetDatabase.GetDependencies(GetSelectionPaths()).Select(path => AssetDatabase.LoadMainAssetAtPath(path)).ToList(), "引用信息：");
         }
 
+        private void CollectReverseDependences()
+        {
+            var objs = WWFramework.Helper.Editor.EditorAssetHelper.CollectReverseDependencies(GetSelections());
+            SelectingEditorWindow.Show(objs.ToList(), "引用信息：");
+        }
+
         private void ShowReverseDependences()
         {
             var selections = GetSelections();
             var paths = selections.Select(obj => AssetDatabase.GetAssetPath(obj)).ToArray();
-            var objPaths = WWFramework.Helper.Editor.EditorHelper.GetReverseDependencies(paths);
+            var objPaths = WWFramework.Helper.Editor.EditorAssetHelper.GetReverseDependencies(paths);
 
             SelectingEditorWindow.Show(objPaths.ConvertAll(input => AssetDatabase.LoadMainAssetAtPath(input)), "反向引用：");
         }
@@ -78,14 +84,7 @@ namespace WWFramework.Util.Editor
 
         private string[] GetSelectionPaths()
         {
-            if (_searchObject != null)
-            {
-                return new[] {AssetDatabase.GetAssetPath(_searchObject)};
-            }
-            else
-            {
-                return Selection.assetGUIDs.Select(guid => AssetDatabase.GUIDToAssetPath(guid)).ToArray();
-            }
+            return GetSelections().Select(AssetDatabase.GetAssetPath).ToArray();
         }
     }
 }

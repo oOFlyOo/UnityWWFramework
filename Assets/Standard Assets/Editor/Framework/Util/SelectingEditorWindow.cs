@@ -18,10 +18,7 @@ namespace WWFramework.Util.Editor
 
         public static void Show(List<Object> goList, string msg = null)
         {
-            if (goList != null && goList.Count > 0)
-            {
-                Open(goList, msg);
-            }
+            Open(goList, msg);
         }
 
         private static void Open(List<Object> goList, string msg)
@@ -46,6 +43,7 @@ namespace WWFramework.Util.Editor
 
             _search = EditorUIHelper.SearchCancelTextField(_search);
             _searchFilter = EditorUIHelper.EnumPopup<EditorAssetHelper.SearchFilter>(_searchFilter, "SearchFilter");
+            EditorUIHelper.TitleField("数量：", (_goList != null ? _goList.Count : 0).ToString());
 
             EditorUIHelper.Space();
             _ListScroll = EditorUIHelper.BeginScrollView(_ListScroll);

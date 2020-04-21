@@ -88,7 +88,7 @@ namespace WWFramework.Util
                 process = Process.Start(info);
             }
 
-            if (info.FileName == AssetHelper.DefaultWinCommand && !_useShell)
+            if (info.FileName == AssetHelper.DefaultCommand && !_useShell)
             {
                 process.StandardInput.WriteLine("exit");
             }

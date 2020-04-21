@@ -13,8 +13,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ToolList:
   - ToolPath: 
-    Extension: .shader
-  - ToolPath: D:\Sublime Text\sublime_text.exe
-    Extension: .mat
-  - ToolPath: D:\Sublime Text\sublime_text.exe
-    Extension: .prefab
+    Extension: shader
+  - ToolPath: 
+    Extension: xml
+  - ToolPath: 
+    Extension: txt
+  - ToolPath: D:\Microsoft VS Code\Code.exe
+    Extension: mat
+  - ToolPath: 
+    Extension: json
+  - ToolPath: 
+    Extension: prefab
+  - ToolPath: D:\Microsoft VS Code\Code.exe
+    Extension: bytes
+  - ToolPath: 
+    Extension: cginc

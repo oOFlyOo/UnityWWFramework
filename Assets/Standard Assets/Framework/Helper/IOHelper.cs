@@ -65,6 +65,11 @@ namespace WWFramework.Helper
             return false;
         }
 
+        public static bool CreateFileDirectory(string filePath)
+        {
+            return CreateDirectory(Path.GetDirectoryName(filePath));
+        }
+
         public static bool CreateDirectory(string path)
         {
             if (!Directory.Exists(path))

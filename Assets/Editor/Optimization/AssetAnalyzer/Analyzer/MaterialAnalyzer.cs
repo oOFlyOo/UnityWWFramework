@@ -95,7 +95,7 @@ namespace WWFramework.Optimaztion.Editor
             if (correct)
             {
                 matInfo.ApplyModifiedProperties();
-                matInfo.UpdateIfDirtyOrScript();
+                matInfo.UpdateIfRequiredOrScript();
                 if (needSave)
                 {
                     AssetDatabase.SaveAssets();

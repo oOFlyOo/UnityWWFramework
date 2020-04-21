@@ -6,7 +6,7 @@ namespace WWFramework.Extension
     public static class CollectionExtension
     {
         #region 弃用
-        [Obsolete("只是一个模板，必须单独每个写")]
+        [Obsolete("只是一个模板，必须单独每个写", true)]
         public sealed class EnumComparer<T> : IEqualityComparer<T> where T : IComparable, IConvertible
         {
             private static EnumComparer<T> _instance;

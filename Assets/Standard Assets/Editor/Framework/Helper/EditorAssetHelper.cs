@@ -37,11 +37,12 @@ namespace WWFramework.Helper.Editor
         }
 
         private static string _projectTempPath;
+
         public static string ProjectTempPath
         {
             get
             {
-                if (string.IsNullOrEmpty(_projectTempPath))
+                if (String.IsNullOrEmpty(_projectTempPath))
                 {
                     _projectTempPath = IOHelper.ProjectDirectory + "/Temp";
                 }
@@ -280,6 +281,150 @@ namespace WWFramework.Helper.Editor
 
         #endregion
 
+        #region 资源引用
+
+        private const string RevertDependenciesSearch =
+            "t:AnimatorController t:AnimatorOverrideController t:Material t:Prefab t:Scene t:ScriptableObject";
+
+        private class AssetDependence
+        {
+            private static readonly string[] CacheNull = new string[0];
+
+            public Hash128 Hash;
+            public string[] Dependencies = CacheNull;
+        }
+
+        private static readonly Dictionary<string, AssetDependence> AssetDependenceDict =
+            new Dictionary<string, AssetDependence>();
+
+        public static List<string> GetReverseDependencies(string[] paths, string[] searchPaths = null)
+        {
+            var includeList = new HashSet<string>();
+            var stopWatch = new Stopwatch();
+            stopWatch.Start();
+
+            foreach (var guid in AssetDatabase.FindAssets(RevertDependenciesSearch, searchPaths))
+            {
+                var filePath = AssetDatabase.GUIDToAssetPath(guid);
+                var hash = AssetDatabase.GetAssetDependencyHash(filePath);
+                AssetDependence assetDepend;
+                if (!AssetDependenceDict.TryGetValue(filePath, out assetDepend))
+                {
+                    assetDepend = new AssetDependence();
+                    AssetDependenceDict[filePath] = assetDepend;
+                }
+
+                if (assetDepend.Hash != hash)
+                {
+                    assetDepend.Hash = hash;
+                    assetDepend.Dependencies = AssetDatabase.GetDependencies(filePath, false);
+                }
+
+                var dependencies = assetDepend.Dependencies;
+
+                foreach (var dependence in dependencies)
+                {
+                    if (paths.Any(dependence.Contains))
+                    {
+                        includeList.Add(filePath);
+                        break;
+                    }
+                }
+            }
+
+            stopWatch.Stop();
+            UnityEngine.Debug.Log(String.Format("反向查找依赖耗时：{0}", stopWatch.Elapsed.Seconds));
+
+            return includeList.ToList();
+        }
+
+        private class AssetDependenceObjects
+        {
+            private static readonly Object[] CacheNull = new Object[0];
+
+            public Hash128 Hash;
+            public Object[] Dependencies = CacheNull;
+        }
+
+        private static readonly Dictionary<string, AssetDependenceObjects> AssetDependenceObjectDict =
+            new Dictionary<string, AssetDependenceObjects>();
+
+        private static readonly Object[] CacheSearchAsset = new Object[1];
+
+        private static Object[] GetCacheSearchAsset(Object obj)
+        {
+            CacheSearchAsset[0] = obj;
+
+            return CacheSearchAsset;
+        }
+
+        public static List<Object> CollectReverseDependencies(Object[] objs, string[] searchPaths = null)
+        {
+            var includeList = new HashSet<Object>();
+            var stopWatch = new Stopwatch();
+            stopWatch.Start();
+
+            var searchObjs = new HashSet<Object>();
+            foreach (var guid in AssetDatabase.FindAssets(RevertDependenciesSearch, searchPaths))
+            {
+                var filePath = AssetDatabase.GUIDToAssetPath(guid);
+                var mainObj = AssetDatabase.LoadMainAssetAtPath(filePath);
+                // EditorUtility.CollectDependencies 是 recursive 的
+                if (searchObjs.Contains(mainObj))
+                {
+                    continue;
+                }
+
+                var hash = AssetDatabase.GetAssetDependencyHash(filePath);
+                AssetDependenceObjects assetDepend;
+                if (!AssetDependenceObjectDict.TryGetValue(filePath, out assetDepend))
+                {
+                    assetDepend = new AssetDependenceObjects();
+                    AssetDependenceObjectDict[filePath] = assetDepend;
+                }
+
+                if (assetDepend.Hash != hash)
+                {
+                    assetDepend.Hash = hash;
+                    assetDepend.Dependencies =
+                        EditorUtility.CollectDependencies(GetCacheSearchAsset(mainObj));
+                }
+
+                var dependencies = assetDepend.Dependencies;
+
+                var isMatch = false;
+                foreach (var dependence in dependencies)
+                {
+                    if (Array.IndexOf(objs, dependence) >= 0)
+                    {
+                        includeList.Add(mainObj);
+                        isMatch = true;
+
+                        break;
+                    }
+                }
+
+                if (!isMatch)
+                {
+                    // 如果该对象没搜到，那该对象包含的对象都不需要搜了
+                    searchObjs.UnionWith(dependencies);
+                }
+            }
+
+            // 字体会错乱？
+            AssetDatabase.Refresh();
+            AssetDatabase.SaveAssets();
+
+            stopWatch.Stop();
+            UnityEngine.Debug.Log(String.Format("反向查找依赖耗时：{0}", stopWatch.Elapsed.Seconds));
+
+            return includeList.ToList();
+        }
+
+
+
+        #endregion
+
 
         #region 资源创建
 
@@ -398,7 +543,7 @@ namespace WWFramework.Helper.Editor
 
         [MenuItem("Assets/Path/CopyRelativePath", true)]
         [MenuItem("Assets/Path/CopyAbsolutionPath", true)]
-        private static bool CopyRelativePathCheck()
+        private static bool CopyPathCheck()
         {
             return Selection.assetGUIDs.Length == 1;
         }
@@ -413,6 +558,18 @@ namespace WWFramework.Helper.Editor
         private static void CopyAbsolutionPath()
         {
             GUIUtility.systemCopyBuffer = IOHelper.GetFullPath(AssetDatabase.GUIDToAssetPath(Selection.assetGUIDs[0]));
+        }
+
+        [MenuItem("GameObject/Path/CopyRelativePath", true)]
+        private static bool CopyGameObjectPathCheck()
+        {
+            return Selection.activeGameObject != null;
+        }
+
+        [MenuItem("GameObject/Path/CopyGameObjectPath")]
+        private static void CopyGameObjectPath()
+        {
+            GUIUtility.systemCopyBuffer = Selection.activeGameObject.transform.GetHierarchyPath();
         }
 
         [MenuItem("Assets/Save Assets %#&s")]
@@ -430,10 +587,12 @@ namespace WWFramework.Helper.Editor
         #endregion
 
         #region 图片相关
+
         public static void GetTextureSize(TextureImporter importer, out int width, out int height)
         {
             object[] args = new object[2] { 0, 0 };
-            var method = typeof(TextureImporter).GetMethod("GetWidthAndHeight", BindingFlags.NonPublic | BindingFlags.Instance);
+            var method =
+                typeof(TextureImporter).GetMethod("GetWidthAndHeight", BindingFlags.NonPublic | BindingFlags.Instance);
             method.Invoke(importer, args);
             width = (int)args[0];
             height = (int)args[1];
@@ -507,6 +666,7 @@ namespace WWFramework.Helper.Editor
         #endregion
 
         #region 模型
+
         [MenuItem("Assets/Model/LogModelBonesCount")]
         private static void LogModelBonesCount()
         {
@@ -527,7 +687,7 @@ namespace WWFramework.Helper.Editor
             var importer = AssetImporter.GetAtPath(path) as ModelImporter;
             if (importer != null)
             {
-//                return importer.transformPaths.Length;
+                //                return importer.transformPaths.Length;
 
                 byte[] metaFileBytes = null;
                 var optimize = importer.optimizeGameObjects;
@@ -549,15 +709,19 @@ namespace WWFramework.Helper.Editor
                     File.WriteAllBytes(AssetDatabase.GetTextMetaFilePathFromAssetPath(path), metaFileBytes);
                 }
             }
+
             return count;
         }
+
         #endregion
 
         #region 资源类型
+
         public static bool IsMetaFile(string path)
         {
             return path.EndsWith(".meta");
         }
+
         #endregion
     }
 }

@@ -2,10 +2,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Reflection;
 using UnityEditor;
 using UnityEditor.Callbacks;
+using UnityEngine;
 using WWFramework.Extension.Editor;
 
 namespace WWFramework.Helper.Editor
@@ -30,7 +30,7 @@ namespace WWFramework.Helper.Editor
 
         private static void CreateOrLoadReloadAsset()
         {
-            var monoScript = EditorAssetHelper.FindScriptableObject(typeof (RecompileScriptableObject));
+            var monoScript = EditorAssetHelper.FindScriptableObject(typeof(RecompileScriptableObject));
             var path = monoScript.GetScriptableObjectPathByMonoScript();
             _scriptObj = AssetDatabase.LoadAssetAtPath<RecompileScriptableObject>(path);
             if (_scriptObj == null)
@@ -39,6 +39,8 @@ namespace WWFramework.Helper.Editor
             }
         }
 
+        // [DidReloadScripts] 这个依赖代码编译，启动的时候不会执行，而下面那个启动的时候就会执行，包括代码编译过
+//        [InitializeOnLoadMethod]
         [DidReloadScripts]
         private static void DidReloadScripts()
         {
@@ -51,16 +53,51 @@ namespace WWFramework.Helper.Editor
             {
                 try
                 {
-                    RecompileScriptList[0].Execute();
-                    RecompileScriptList.RemoveAt(0);
-                    DidRecompilingScripts();
+                    if (!RecompileScriptList[0].Executing)
+                    {
+                        var obj = RecompileScriptList[0];
+                        obj.Execute();
+                        // 有可能执行途中进行了清空操作
+                        if (RecompileScriptList.IndexOf(obj) == 0)
+                        {
+                            RecompileScriptList.RemoveAt(0);
+                        }
+
+                        SetDirtyAndSaveScriptObj();
+
+                        DidRecompilingScripts();
+                    }
+                    else
+                    {
+                        // 往往是因为没执行完就关闭了 Unity
+                        ClearRecompileScriptList();
+                    }
                 }
                 catch (Exception)
                 {
-                    RecompileScriptList.Clear();
+                    ClearRecompileScriptList();
+
                     throw;
                 }
             }
+        }
+
+        public static void CheckBeforeUsing()
+        {
+            ClearRecompileScriptList();
+        }
+
+        private static void ClearRecompileScriptList()
+        {
+            RecompileScriptList.Clear();
+            SetDirtyAndSaveScriptObj();
+        }
+
+        private static void SetDirtyAndSaveScriptObj()
+        {
+            EditorUtility.SetDirty(_scriptObj);
+            AssetDatabase.Refresh();
+            AssetDatabase.SaveAssets();
         }
 
         public static void WaitIfCompiling(Action callback)
@@ -75,28 +112,39 @@ namespace WWFramework.Helper.Editor
             }
         }
 
-        public static void WaitIfCompiling<T>(Action<T> callback, object param)
+    public static void WaitIfCompiling<T>(Action<T> callback, object arg)
+    {
+        if (ShouldAdd())
         {
-            if (ShouldAdd())
-            {
-                AddRecompileScript(callback.Method, param);
-            }
-            else
-            {
-                callback((T)param);
-            }
+            AddRecompileScript(callback.Method, arg);
         }
+        else
+        {
+            callback((T)arg);
+        }
+    }
 
-        private static void AddRecompileScript(MethodInfo method, object param = null)
+    public static void WaitIfCompiling<T1, T2>(Action<T1, T2> callback, object arg1, object arg2)
+    {
+        if (ShouldAdd())
         {
-            if (!method.IsStatic)
-            {
-                throw new NotSupportedException(method.ToString());
-            }
-            RecompileScriptList.Add(new RecompileScript(method, param));
-            EditorUtility.SetDirty(_scriptObj);
-//            AssetDatabase.SaveAssets();
+            AddRecompileScript(callback.Method, arg1, arg2);
         }
+        else
+        {
+            callback((T1)arg1, (T2)arg2);
+        }
+    }
+
+    private static void AddRecompileScript(MethodInfo method, params object[] args)
+    {
+        if (!method.IsStatic)
+        {
+            throw new NotSupportedException(method.ToString());
+        }
+        RecompileScriptList.Add(new RecompileScript(method, args));
+        SetDirtyAndSaveScriptObj();
+    }
 
         private static bool ShouldAdd()
         {

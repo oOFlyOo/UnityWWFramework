@@ -36,7 +36,7 @@ public class JsonWriter {
 	private WriterContext context;
 	private Stack<WriterContext> ctxStack;
 	private bool hasReachedEnd;
-	private char[] hexSeq;
+	//private char[] hexSeq;
 	private int indentation, indentValue;
 	private StringBuilder stringBuilder;
 
@@ -123,7 +123,7 @@ public class JsonWriter {
 
 	private void Init() {
 		hasReachedEnd = false;
-		hexSeq = new char[4];
+		//hexSeq = new char[4];
 		indentation = 0;
 		indentValue = 4;
 		PrettyPrint = false;

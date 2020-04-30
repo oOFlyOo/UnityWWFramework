@@ -34,7 +34,7 @@ public class JsonMockWrapper : IJsonWrapper {
 	public void SetJsonType(JsonType type) {}
 	public void SetString(string val) {}
 
-	public string ToJson() { return ""; }
+	public string ToJson(bool prettyPrint) { return ""; }
 	public void ToJson(JsonWriter writer) {}
 
 	bool IList.IsFixedSize { get { return true; } }

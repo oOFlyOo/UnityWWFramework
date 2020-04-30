@@ -308,6 +308,11 @@ public class JsonMapper {
 			#endif
 				return null;
 			}
+            else if (instType.IsValueType)
+            {
+                UnityEngine.Debug.LogWarningFormat("Can't assign null to an instance of type {0}", instType);
+                return 0;
+            }
 			throw new JsonException(string.Format("Can't assign null to an instance of type {0}", instType));
 		}
 		if (reader.Token == JsonToken.Real ||
@@ -592,6 +597,9 @@ public class JsonMapper {
 		RegisterImporter(baseImportTable, typeof(long), typeof(decimal), delegate(object input) {
 			return Convert.ToDecimal((long)input);
 		});
+        RegisterImporter(baseImportTable, typeof(long), typeof(string), delegate(object input) {
+            return input.ToString();
+        });
 		RegisterImporter(baseImportTable, typeof(double), typeof(float), delegate(object input) {
 			return Convert.ToSingle((double)input);
 		});
@@ -604,6 +612,15 @@ public class JsonMapper {
 		RegisterImporter(baseImportTable, typeof(string), typeof(DateTime), delegate(object input) {
 			return Convert.ToDateTime((string)input, datetimeFormat);
 		});
+        RegisterImporter(baseImportTable, typeof(string), typeof(int), delegate(object input)
+        {
+            int val;
+            if (!int.TryParse((string) input, out val))
+            {
+                UnityEngine.Debug.LogWarningFormat("{0} 不符合类型 int", input);
+            }
+            return val;
+        });
 	}
 
 	private static void RegisterImporter(IDictionary<Type, IDictionary<Type, ImporterFunc>> table, Type jsonType, Type valueType, ImporterFunc importer) {
@@ -623,7 +640,7 @@ public class JsonMapper {
 		}
 		if (obj is IJsonWrapper) {
 			if (privateWriter) {
-				writer.TextWriter.Write(((IJsonWrapper)obj).ToJson());
+				writer.TextWriter.Write(((IJsonWrapper)obj).ToJson(writer.PrettyPrint));
 			} else {
 				((IJsonWrapper)obj).ToJson(writer);
 			}
@@ -648,7 +665,7 @@ public class JsonMapper {
 		if (obj is Array) {
 			writer.WriteArrayStart();
 			Array arr = (Array)obj;
-			Type elemType = arr.GetType().GetElementType();
+			//Type elemType = arr.GetType().GetElementType();
 			foreach (object elem in arr) {
 				// if the collection contains polymorphic elements, we need to include type information for deserialization
 				//if (writer.TypeHinting && elem != null & elem.GetType() != elemType) {

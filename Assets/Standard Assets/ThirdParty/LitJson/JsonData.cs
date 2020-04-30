@@ -824,12 +824,13 @@ public class JsonData : IJsonWrapper, IEquatable<JsonData> {
 		this.type = type;
 	}
 
-	public string ToJson() {
+	public string ToJson(bool prettyPrint = false) {
 		if (json != null) {
 			return json;
 		}
 		StringWriter sw = new StringWriter();
 		JsonWriter writer = new JsonWriter(sw);
+	    writer.PrettyPrint = prettyPrint;
 		writer.Validate = false;
 		WriteJson(this, writer);
 		json = sw.ToString();

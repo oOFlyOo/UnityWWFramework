@@ -47,7 +47,7 @@ public interface IJsonWrapper : IList, IOrderedDictionary {
 	void SetReal(double val);
 	void SetBoolean(bool val);
 
-	string ToJson();
+	string ToJson(bool prettyPrint);
 	void ToJson(JsonWriter writer);
 }
 

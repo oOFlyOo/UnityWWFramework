@@ -303,8 +303,8 @@ public class ParticleSystemPreview : ObjectPreview
         if (m_PreviewUtility == null)
         {
             m_PreviewUtility = new PreviewRenderUtility(true);
-            m_PreviewUtility.m_CameraFieldOfView = 30f;
-            m_PreviewUtility.m_Camera.cullingMask = 1 << PreviewCullingLayer;
+            m_PreviewUtility.cameraFieldOfView = 30f;
+            m_PreviewUtility.camera.cullingMask = 1 << PreviewCullingLayer;
             CreatePreviewInstances();
         }
         if (m_FloorPlane == null)
@@ -379,12 +379,12 @@ public class ParticleSystemPreview : ObjectPreview
         Quaternion pivotRot = quaternion;
         PositionPreviewObjects(pivotRot, pivotPos, quaternion2, bodyPosition, directionRot, quaternion, vector, directionPos, m_AvatarScale);
 
-        m_PreviewUtility.m_Camera.nearClipPlane = 0.5f * m_ZoomFactor;
-        m_PreviewUtility.m_Camera.farClipPlane = 100f * m_AvatarScale;
+        m_PreviewUtility.camera.nearClipPlane = 0.5f * m_ZoomFactor;
+        m_PreviewUtility.camera.farClipPlane = 100f * m_AvatarScale;
         Quaternion rotation = Quaternion.Euler(-m_PreviewDir.y, -m_PreviewDir.x, 0f);
         Vector3 position2 = rotation * (Vector3.forward * -5.5f * m_ZoomFactor) + bodyPosition + m_PivotPositionOffset;
-        m_PreviewUtility.m_Camera.transform.position = position2;
-        m_PreviewUtility.m_Camera.transform.rotation = rotation;
+        m_PreviewUtility.camera.transform.position = position2;
+        m_PreviewUtility.camera.transform.rotation = rotation;
 
         Quaternion identity = Quaternion.identity;
         Vector3 position = new Vector3(0f, 0f, 0f);
@@ -393,10 +393,10 @@ public class ParticleSystemPreview : ObjectPreview
         Matrix4x4 matrix2 = Matrix4x4.TRS(position, identity, Vector3.one * 5f * m_AvatarScale);
         floorMaterial.mainTextureOffset = -new Vector2(position.x, position.z) * 5f * 0.08f * (1f / m_AvatarScale);
         floorMaterial.SetVector("_Alphas", new Vector4(0.5f * 1f, 0.3f * 1f, 0f, 0f));
-        Graphics.DrawMesh(m_FloorPlane, matrix2, floorMaterial, PreviewCullingLayer, m_PreviewUtility.m_Camera, 0);
+        Graphics.DrawMesh(m_FloorPlane, matrix2, floorMaterial, PreviewCullingLayer, m_PreviewUtility.camera, 0);
 
         SetPreviewCharacterEnabled(true, m_ShowReference);
-        m_PreviewUtility.m_Camera.Render();
+        m_PreviewUtility.camera.Render();
         SetPreviewCharacterEnabled(false, false);
         TeardownPreviewLightingAndFx(oldFog);
     }
@@ -444,11 +444,11 @@ public class ParticleSystemPreview : ObjectPreview
 
     private bool SetupPreviewLightingAndFx()
     {
-        m_PreviewUtility.m_Light[0].intensity = 1.4f;
-        m_PreviewUtility.m_Light[0].transform.rotation = Quaternion.Euler(40f, 40f, 0f);
-        m_PreviewUtility.m_Light[1].intensity = 1.4f;
+        m_PreviewUtility.lights[0].intensity = 1.4f;
+        m_PreviewUtility.lights[0].transform.rotation = Quaternion.Euler(40f, 40f, 0f);
+        m_PreviewUtility.lights[1].intensity = 1.4f;
         Color ambient = new Color(0.1f, 0.1f, 0.1f, 0f);
-        InternalEditorUtility.SetCustomLighting(m_PreviewUtility.m_Light, ambient);
+        InternalEditorUtility.SetCustomLighting(m_PreviewUtility.lights, ambient);
         bool fog = RenderSettings.fog;
         Unsupported.SetRenderSettingsUseFogNoDirty(false);
         return fog;
@@ -715,7 +715,7 @@ public class ParticleSystemPreview : ObjectPreview
 
     public void DoAvatarPreviewPan(Event evt)
     {
-        Camera camera = m_PreviewUtility.m_Camera;
+        Camera camera = m_PreviewUtility.camera;
         Vector3 vector = camera.WorldToScreenPoint(bodyPosition + m_PivotPositionOffset);
         Vector3 a = new Vector3(-evt.delta.x, evt.delta.y, 0f);
         vector += a * Mathf.Lerp(0.25f, 2f, m_ZoomFactor * 0.5f);
@@ -749,7 +749,7 @@ public class ParticleSystemPreview : ObjectPreview
 
     protected Vector3 GetCurrentMouseWorldPosition(Event evt, Rect previewRect)
     {
-        Camera camera = m_PreviewUtility.m_Camera;
+        Camera camera = m_PreviewUtility.camera;
         float scaleFactor = m_PreviewUtility.GetScaleFactor(previewRect.width, previewRect.height);
         return camera.ScreenToWorldPoint(new Vector3((evt.mousePosition.x - previewRect.x) * scaleFactor, (previewRect.height - (evt.mousePosition.y - previewRect.y)) * scaleFactor, 0f)
         {

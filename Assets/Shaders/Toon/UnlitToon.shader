@@ -1,4 +1,4 @@
-﻿Shader "WWFramework/UnlitToon"
+﻿Shader "WWFramework/Toon/UnlitToon"
 {
 	Properties
 	{

@@ -15,8 +15,8 @@ float4 ObjectSpaceOutline(float4 pos, float3 normal, fixed outlineWidth)
 // 返回裁剪空间坐标
 float4 ViewSpaceOutline(float4 pos, float3 normal, fixed outlineWidth)
 {
-    float4 viewPos = mul(UNITY_MATRIX_MV, pos);
-    float3 viewNormal = mul((float3x3)UNITY_MATRIX_IT_MV, normal);
+    float4 viewPos = float4(UnityObjectToViewPos(pos), 1);
+    float3 viewNormal = UnityObjectToViewPos(normal);
     // 同一平面深度
     viewNormal.z = -0.5;
     // 保证宽度一致

@@ -71,7 +71,7 @@
 			#pragma multi_compile_fog
 
 			#include "UnityCG.cginc"
-			#include "../WWFramework_NPR.cginc"
+			#include "../WWFramework_NPR.hlsl"
 
 			fixed _OutlineWidth;
 

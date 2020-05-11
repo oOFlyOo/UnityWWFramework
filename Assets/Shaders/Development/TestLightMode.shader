@@ -12,17 +12,17 @@ Shader "WWFramework/Development/TestLightMode"
 		Pass
 		{
 			Tags { "LightMode" = "ForwardBase" }
-			
+
 			CGPROGRAM
-			
+
 			#pragma vertex vert
 			#pragma fragment frag
 			// make fog work
 			#pragma multi_compile_fog
 			#pragma multi_compile_fwdbase
-			
+
 			#include "Lighting.cginc"
-			#include "../WWFramework_Light.cginc"
+			#include "../WWFramework_Light.hlsl"
 
 			struct appdata
 			{
@@ -50,7 +50,7 @@ Shader "WWFramework/Development/TestLightMode"
 			};
 
 			fixed4 _ForwardBaseColor;
-			
+
 			v2f vert(appdata v)
 			{
 				v2f o;
@@ -79,7 +79,7 @@ Shader "WWFramework/Development/TestLightMode"
 				UNITY_TRANSFER_FOG(o, o.vertex);
 				return o;
 			}
-			
+
 			fixed4 frag(v2f i): SV_Target
 			{
 				// sample the texture
@@ -103,7 +103,7 @@ Shader "WWFramework/Development/TestLightMode"
 				return col;
 			}
 			ENDCG
-			
+
 		}
 
 
@@ -112,18 +112,18 @@ Shader "WWFramework/Development/TestLightMode"
 			Tags { "LightMode" = "ForwardAdd" }
 			Blend One One
 			ZWrite Off
-			
+
 			CGPROGRAM
-			
+
 			#pragma vertex vert
 			#pragma fragment frag
 			// make fog work
 			#pragma multi_compile_fog
 			#pragma multi_compile_fwdadd
-			
+
 			#include "Lighting.cginc"
 			#include "AutoLight.cginc"
-			#include "../WWFramework_Light.cginc"
+			#include "../WWFramework_Light.hlsl"
 
 			struct appdata
 			{
@@ -143,7 +143,7 @@ Shader "WWFramework/Development/TestLightMode"
 			};
 
 			fixed4 _ForwardAddColor;
-			
+
 			v2f vert(appdata v)
 			{
 				v2f o;
@@ -156,7 +156,7 @@ Shader "WWFramework/Development/TestLightMode"
 				UNITY_TRANSFER_FOG(o, o.vertex);
 				return o;
 			}
-			
+
 			fixed4 frag(v2f i): SV_Target
 			{
 				// sample the texture
@@ -169,7 +169,7 @@ Shader "WWFramework/Development/TestLightMode"
 				return col;
 			}
 			ENDCG
-			
+
 		}
 	}
 }

@@ -14,10 +14,10 @@
 			CGPROGRAM
 			#pragma vertex vert
 			#pragma fragment frag
-			
+
 			#include "UnityCG.cginc"
 			#include "Lighting.cginc"
-			#include "../WWFramework_Light.cginc"
+			#include "../WWFramework_Light.hlsl"
 
 			struct appdata
 			{
@@ -36,7 +36,7 @@
 			sampler2D _MainTex;
 			float4 _MainTex_ST;
 			fixed _Gloss;
-			
+
 			v2f vert (appdata v)
 			{
 				v2f o;
@@ -49,12 +49,12 @@
 				fixed3 worldNormal = normalize(UnityObjectToWorldNormal(v.normal));
 				fixed3 worldViewDir = normalize(WorldSpaceViewDir(v.vertex));
 
-				o.color = ambient + _LightColor0.rgb * DiffuseLambert(worldLightDir, worldNormal) + 
+				o.color = ambient + _LightColor0.rgb * DiffuseLambert(worldLightDir, worldNormal) +
 				_LightColor0.rgb * SpecularBlinnPhong(worldLightDir, worldNormal, worldViewDir, _Gloss);
 
 				return o;
 			}
-			
+
 			fixed4 frag (v2f i) : SV_Target
 			{
 				fixed4 col = tex2D(_MainTex, i.uv);

@@ -11,17 +11,17 @@
 		Pass
 		{
 			Tags { "LightMode" = "ForwardBase" }
-			
+
 			CGPROGRAM
-			
+
 			#pragma vertex vert
 			#pragma fragment frag
 			// make fog work
 			#pragma multi_compile_fog
 			#pragma multi_compile_fwdbase
-			
+
 			#include "Lighting.cginc"
-			#include "../WWFramework_Light.cginc"
+			#include "../WWFramework_Light.hlsl"
 
 			struct appdata
 			{
@@ -51,7 +51,7 @@
 
 			sampler2D _MainTex;
 			float4 _MainTex_ST;
-			
+
 			v2f vert(appdata v)
 			{
 				v2f o;
@@ -84,7 +84,7 @@
 				UNITY_TRANSFER_FOG(o, o.vertex);
 				return o;
 			}
-			
+
 			fixed4 frag(v2f i): SV_Target
 			{
 				// sample the texture
@@ -107,7 +107,7 @@
 				return col;
 			}
 			ENDCG
-			
+
 		}
 
 
@@ -116,18 +116,18 @@
 			Tags { "LightMode" = "ForwardAdd" }
 			Blend One One
 			ZWrite Off
-			
+
 			CGPROGRAM
-			
+
 			#pragma vertex vert
 			#pragma fragment frag
 			// make fog work
 			#pragma multi_compile_fog
 			#pragma multi_compile_fwdadd
-			
+
 			#include "Lighting.cginc"
 			#include "AutoLight.cginc"
-			#include "../WWFramework_Light.cginc"
+			#include "../WWFramework_Light.hlsl"
 
 			struct appdata
 			{
@@ -148,7 +148,7 @@
 
 			sampler2D _MainTex;
 			float4 _MainTex_ST;
-			
+
 			v2f vert(appdata v)
 			{
 				v2f o;
@@ -163,7 +163,7 @@
 				UNITY_TRANSFER_FOG(o, o.vertex);
 				return o;
 			}
-			
+
 			fixed4 frag(v2f i): SV_Target
 			{
 				// sample the texture
@@ -176,7 +176,7 @@
 				return col;
 			}
 			ENDCG
-			
+
 		}
 	}
 }

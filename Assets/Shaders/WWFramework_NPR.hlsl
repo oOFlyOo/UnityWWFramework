@@ -2,12 +2,42 @@
 // 非真实渲染
 
 
+
+// 顶点缩放
+float4 PositionScaleOutline(float4 pos, float3 normal, fixed outlineWidth)
+{
+	float4 normalizeVertex = normalize(v.vertex);
+	fixed signVar = dot(normalizeVertex, normalize(v.normal)) < 0 ? - 1: 1;
+	float4 clipPos = UnityObjectToClipPos(float4(v.vertex.xyz + signVar * normalizeVertex * outlineWidth, 1));
+
+	return clipPos;
+}
+
+
+// 摄像机Z偏移，用于描边排除内描边
+float4 ClipSpaceZOffset(float4 clipPos, fixed offsetZ)
+{
+	#if defined(UNITY_REVERSED_Z)
+		//v.2.0.4.2 (DX)
+		offsetZ = offsetZ * - 0.01;
+	#else
+		//OpenGL
+		offsetZ = offsetZ * 0.01;
+	#endif
+
+	float4 clipCameraPos = mul(UNITY_MATRIX_VP, float4(_WorldSpaceCameraPos.xyz, 1));
+	clipPos.z += offsetZ * clipCameraPos.z;
+
+	return clipPos;
+}
+
+
 // 简单理解就是模型放大，计算简单，内部褶皱也会产生描边
 // 轮廓宽度无法精确保证，对于法线突变的模型的不适应性
 // 返回模型空间位置
 float4 ObjectSpaceOutline(float4 pos, float3 normal, fixed outlineWidth)
 {
-    return pos + float4(normal, 0) * outlineWidth;
+	return pos + float4(normal, 0) * outlineWidth;
 }
 
 
@@ -15,14 +45,14 @@ float4 ObjectSpaceOutline(float4 pos, float3 normal, fixed outlineWidth)
 // 返回裁剪空间坐标
 float4 ViewSpaceOutline(float4 pos, float3 normal, fixed outlineWidth)
 {
-    float4 viewPos = float4(UnityObjectToViewPos(pos), 1);
-    float3 viewNormal = UnityObjectToViewPos(normal);
-    // 同一平面深度
-    viewNormal.z = -0.5;
-    // 保证宽度一致
-    viewPos += float4(normalize(viewNormal), 0) * outlineWidth;
+	float4 viewPos = float4(UnityObjectToViewPos(pos), 1);
+	float3 viewNormal = UnityObjectToViewPos(normal);
+	// 同一平面深度
+	viewNormal.z = -0.5;
+	// 保证宽度一致
+	viewPos += float4(normalize(viewNormal), 0) * outlineWidth;
 
-    return mul(UNITY_MATRIX_P, viewPos);
+	return mul(UNITY_MATRIX_P, viewPos);
 }
 
 

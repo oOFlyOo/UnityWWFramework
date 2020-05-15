@@ -1,0 +1,17 @@
+{
+    "name": "WWFramework.Standard.Editor",
+    "references": [
+        "GUID:4de7f415330aae44796dcd56325e03af"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

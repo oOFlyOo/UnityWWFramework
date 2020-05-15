@@ -9,8 +9,7 @@ struct a2v
 
 struct v2f
 {
-	float2 uv: TEXCOORD0;
-	UNITY_FOG_COORDS(1)
+	UNITY_FOG_COORDS(0)
 	float4 vertex: SV_POSITION;
 };
 

@@ -13,8 +13,10 @@ struct v2f
 	float4 vertex: SV_POSITION;
 };
 
+CBUFFER_START(UnityPerMaterial)
 float _Outline;
 fixed4 _OutlineColor;
+CBUFFER_END
 
 v2f vert(a2v v)
 {

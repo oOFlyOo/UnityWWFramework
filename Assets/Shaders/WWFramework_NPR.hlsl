@@ -6,9 +6,9 @@
 // 顶点缩放
 float4 PositionScaleOutline(float4 pos, float3 normal, fixed outlineWidth)
 {
-	float4 normalizeVertex = normalize(v.vertex);
-	fixed signVar = dot(normalizeVertex, normalize(v.normal)) < 0 ? - 1: 1;
-	float4 clipPos = UnityObjectToClipPos(float4(v.vertex.xyz + signVar * normalizeVertex * outlineWidth, 1));
+	float4 normalizeVertex = normalize(pos);
+	fixed signVar = dot(normalizeVertex, normalize(normal)) < 0 ? - 1: 1;
+	float4 clipPos = UnityObjectToClipPos(float4(pos.xyz + signVar * normalizeVertex * outlineWidth, 1));
 
 	return clipPos;
 }
@@ -43,16 +43,24 @@ float4 ObjectSpaceOutline(float4 pos, float3 normal, fixed outlineWidth)
 
 // 由于都是在同一平面，因此只有外轮廓有描边
 // 返回裁剪空间坐标
-float4 ViewSpaceOutline(float4 pos, float3 normal, fixed outlineWidth)
+float4 ViewSpaceOutline(float4 pos, float3 normal, fixed outlineWidth, fixed zSmooth)
 {
 	float4 viewPos = float4(UnityObjectToViewPos(pos), 1);
 	float3 viewNormal = UnityObjectToViewPos(normal);
 	// 同一平面深度
-	viewNormal.z = -0.5;
+	viewNormal.z = -zSmooth;
 	// 保证宽度一致
 	viewPos += float4(normalize(viewNormal), 0) * outlineWidth;
 
 	return mul(UNITY_MATRIX_P, viewPos);
+}
+
+
+// 由于都是在同一平面，因此只有外轮廓有描边
+// 返回裁剪空间坐标
+float4 ViewSpaceOutline(float4 pos, float3 normal, fixed outlineWidth)
+{
+	ViewSpaceOutline(pos, normal, outlineWidth, 0.5);
 }
 
 

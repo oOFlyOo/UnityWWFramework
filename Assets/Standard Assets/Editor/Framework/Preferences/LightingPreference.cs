@@ -21,7 +21,16 @@ namespace WWFramework.Preference.Editor
         }
 
 
-        [PreferenceItem("Lighting")]
+        [SettingsProvider]
+        private static SettingsProvider PreferenceGUI()
+        {
+            return new SettingsProvider("Preferences/Lighting", SettingsScope.User)
+            {
+                guiHandler = searchContext => PreferenceOnGUI()
+            };
+        }
+
+
         private static void PreferenceOnGUI()
         {
             EditorUIHelper.BeginChangeCheck();

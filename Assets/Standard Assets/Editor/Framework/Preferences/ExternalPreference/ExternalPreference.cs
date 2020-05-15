@@ -62,7 +62,16 @@ namespace WWFramework.Preference.Editor
         }
 
 
-        [PreferenceItem("External")]
+        [SettingsProvider]
+        private static SettingsProvider PreferenceGUI()
+        {
+            return new SettingsProvider("Preferences/External", SettingsScope.User)
+            {
+                guiHandler = searchContext => PreferenceOnGUI()
+            };
+        }
+
+
         private static void PreferenceOnGUI()
         {
             EditorUIHelper.BeginHorizontal();

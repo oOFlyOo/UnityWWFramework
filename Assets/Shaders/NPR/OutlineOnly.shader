@@ -2,17 +2,17 @@
 {
 	Properties
 	{
-		_Outline ("Outline Width", Float) = 1
+		_Outline ("Outline Width", Range(0, 10)) = 1
 		_OutlineColor ("Outline Color", Color) = (0, 0, 0, 0)
 	}
 	SubShader
 	{
-		Name "OUTLINE"
-
-		Cull Front
-
 		Pass
 		{
+			Name "OUTLINE"
+
+			Cull Front
+
 			CGPROGRAM
 
 			#pragma vertex vert
@@ -24,7 +24,6 @@
 			#include "WWFramework_Outline.hlsl"
 
 			ENDCG
-
 		}
 	}
 }

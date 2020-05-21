@@ -6,7 +6,7 @@ using UnityEngine.Scripting.APIUpdating;
 
 namespace WWFramework.ShaderGUI.Editor
 {
-    public static class NPRSimpleLitGUI
+    public static class SimpleLitGUI
     {
         public enum SpecularSource
         {
@@ -34,6 +34,12 @@ namespace WWFramework.ShaderGUI.Editor
 
             public static GUIContent highlightsText = new GUIContent("Specular Highlights",
                 "When enabled, the Material reflects the shine from direct lighting.");
+
+            public static GUIContent outlineText = new GUIContent("Outline",
+                "控制描边宽度");
+            public static readonly GUIContent outlineColor = new GUIContent("Outline Color",
+                "控制描边颜色");
+
         }
 
         public struct SimpleLitProperties
@@ -49,6 +55,19 @@ namespace WWFramework.ShaderGUI.Editor
             public MaterialProperty outline;
             public MaterialProperty outlineColor;
 
+            public MaterialProperty rimMin;
+            public MaterialProperty rimMax;
+            public MaterialProperty rimPower;
+
+            public MaterialProperty rampMinStep;
+            public MaterialProperty rampMinThreshold;
+            public MaterialProperty rampMaxStep;
+            public MaterialProperty rampMaxThreshold;
+
+            public MaterialProperty specSmoothness;
+            public MaterialProperty specBlend;
+
+
             public SimpleLitProperties(MaterialProperty[] properties)
             {
                 // Surface Input Props
@@ -61,6 +80,18 @@ namespace WWFramework.ShaderGUI.Editor
 
                 outline = BaseShaderGUI.FindProperty("_Outline", properties, false);
                 outlineColor = BaseShaderGUI.FindProperty("_OutlineColor", properties, false);
+
+                rimMin = BaseShaderGUI.FindProperty("_RimMin", properties, false);
+                rimMax = BaseShaderGUI.FindProperty("_RimMax", properties, false);
+                rimPower = BaseShaderGUI.FindProperty("_RimPower", properties, false);
+
+                rampMinStep = BaseShaderGUI.FindProperty("_RampMinStep", properties, false);
+                rampMinThreshold = BaseShaderGUI.FindProperty("_RampMinThreshold", properties, false);
+                rampMaxStep = BaseShaderGUI.FindProperty("_RampMaxStep", properties, false);
+                rampMaxThreshold = BaseShaderGUI.FindProperty("_RampMaxThreshold", properties, false);
+
+                specSmoothness = BaseShaderGUI.FindProperty("_SpecSmoothness", properties, false);
+                specBlend = BaseShaderGUI.FindProperty("_SpecBlend", properties, false);
             }
         }
 
@@ -80,6 +111,21 @@ namespace WWFramework.ShaderGUI.Editor
                 properties.specHighlights.floatValue = enabled ? (float)SpecularSource.SpecularTextureAndColor : (float)SpecularSource.NoSpecular;
             EditorGUI.showMixedValue = false;
         }
+
+        public static void Additional(SimpleLitProperties properties, MaterialEditor materialEditor, Material material)
+        {
+            DoOutlineArea(properties, materialEditor, material);
+
+            EditorGUILayout.Space();
+            DoRimArea(properties, materialEditor, material);
+
+            EditorGUILayout.Space();
+            DoRampArea(properties, materialEditor, material);
+
+            EditorGUILayout.Space();
+            DoStylizedSpecularArea(properties, materialEditor, material);
+        }
+
 
         public static void DoSpecularArea(SimpleLitProperties properties, MaterialEditor materialEditor, Material material)
         {
@@ -121,6 +167,35 @@ namespace WWFramework.ShaderGUI.Editor
             EditorGUI.indentLevel -= 3;
             EditorGUI.EndDisabledGroup();
         }
+
+        public static void DoOutlineArea(SimpleLitProperties properties, MaterialEditor materialEditor, Material material)
+        {
+            materialEditor.RangeProperty(properties.outline, "Outline Width");
+            materialEditor.ColorProperty(properties.outlineColor, "Outline Color");
+        }
+
+        public static void DoRimArea(SimpleLitProperties properties, MaterialEditor materialEditor, Material material)
+        {
+            materialEditor.RangeProperty(properties.rimMin, "Rim Min");
+            materialEditor.RangeProperty(properties.rimMax, "Rim Max");
+            materialEditor.RangeProperty(properties.rimPower, "Rim Power");
+        }
+
+        public static void DoRampArea(SimpleLitProperties properties, MaterialEditor materialEditor, Material material)
+        {
+            materialEditor.RangeProperty(properties.rampMinStep, "Ramp Min Step");
+            materialEditor.RangeProperty(properties.rampMinThreshold, "Ramp Min Threshold");
+            materialEditor.RangeProperty(properties.rampMaxStep, "Ramp Max Step");
+            materialEditor.RangeProperty(properties.rampMaxThreshold, "Ramp Max Threshold");
+        }
+
+
+        public static void DoStylizedSpecularArea(SimpleLitProperties properties, MaterialEditor materialEditor, Material material)
+        {
+            materialEditor.RangeProperty(properties.specSmoothness, "Specular Smoothing");
+            materialEditor.RangeProperty(properties.specBlend, "Specular Blending");
+        }
+
 
         public static void SetMaterialKeywords(Material material)
         {

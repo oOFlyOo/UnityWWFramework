@@ -59,7 +59,7 @@ float4 ViewSpaceOutline(float4 pos, float3 normal, half outlineWidth, half zSmoo
 // 返回裁剪空间坐标
 float4 ViewSpaceOutline(float4 pos, float3 normal, half outlineWidth)
 {
-	ViewSpaceOutline(pos, normal, outlineWidth, 0.5);
+	return ViewSpaceOutline(pos, normal, outlineWidth, 0.5);
 }
 
 

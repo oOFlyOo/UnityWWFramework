@@ -4,16 +4,16 @@ using UnityEngine;
 
 namespace WWFramework.ShaderGUI.Editor
 {
-    internal class NPRSimpleLitShader : CusomBaseShaderGUI
+    internal class SimpleLitShader : CusomBaseShaderGUI
     {
         // Properties
-        private NPRSimpleLitGUI.SimpleLitProperties shadingModelProperties;
+        private SimpleLitGUI.SimpleLitProperties shadingModelProperties;
 
         // collect properties from the material properties
         public override void FindProperties(MaterialProperty[] properties)
         {
             base.FindProperties(properties);
-            shadingModelProperties = new NPRSimpleLitGUI.SimpleLitProperties(properties);
+            shadingModelProperties = new SimpleLitGUI.SimpleLitProperties(properties);
         }
 
         // material changed check
@@ -50,15 +50,20 @@ namespace WWFramework.ShaderGUI.Editor
         public override void DrawSurfaceInputs(Material material)
         {
             base.DrawSurfaceInputs(material);
-            NPRSimpleLitGUI.Inputs(shadingModelProperties, materialEditor, material);
+            SimpleLitGUI.Inputs(shadingModelProperties, materialEditor, material);
             DrawEmissionProperties(material, true);
             DrawTileOffset(materialEditor, baseMapProp);
         }
 
         public override void DrawAdvancedOptions(Material material)
         {
-            NPRSimpleLitGUI.Advanced(shadingModelProperties);
+            SimpleLitGUI.Advanced(shadingModelProperties);
             base.DrawAdvancedOptions(material);
+        }
+
+        protected override void DrawAdditionalFoldoutsEx(Material material)
+        {
+            SimpleLitGUI.Additional(shadingModelProperties, materialEditor, material);
         }
 
         public override void AssignNewShaderToMaterial(Material material, Shader oldShader, Shader newShader)

@@ -81,6 +81,15 @@
 		return lerp(lerp(0, rampMinThreshold, smoothstep(0, rampMinStep, nl)), lerp(rampMaxThreshold, 1, smoothstep(rampMaxStep, 1, nl)), nl);
 	}
 
+	half StepRampNL(half nl, half rampMinStep, half rampMinThreshold, half rampMaxStep, half rampMaxThreshold)
+	{
+		half min = lerp(0, rampMinThreshold, smoothstep(0, rampMinStep, nl));
+		half max = lerp(rampMaxThreshold, 1, smoothstep(rampMaxStep, 1, nl));
+		half mid = lerp(min, max, nl);
+		return min * step(1 - rampMinStep, 1- nl) + mid * step(rampMinStep, nl) * step(nl, rampMaxStep) + max * step(rampMaxStep, nl);
+	}
+
+
 
 	half WrapRampNL(half nl, half threshold, half smoothness)
 	{

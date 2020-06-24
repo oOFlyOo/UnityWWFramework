@@ -150,5 +150,46 @@ namespace WWFramework.Helper
 
             return result;
         }
+
+
+        public static Texture2D ConvertCubemap2Texture2D(Cubemap cubemap)
+        {
+            var size = cubemap.width;
+            var texWith = size * 4;
+            var texHeight = size * 3;
+            var tex = new Texture2D(texWith, texHeight, TextureFormat.RGBAHalf, false, false);
+            
+            tex.SetPixels(size, 0, size, size, GetPixels(cubemap, CubemapFace.NegativeY, size, size));
+            tex.SetPixels(0, size, size, size, GetPixels(cubemap, CubemapFace.NegativeX, size, size));
+            tex.SetPixels(size, size, size, size, GetPixels(cubemap, CubemapFace.PositiveZ, size, size));
+            tex.SetPixels(size * 2, size, size, size, GetPixels(cubemap, CubemapFace.PositiveX, size, size));
+            tex.SetPixels(size * 3, size, size, size, GetPixels(cubemap, CubemapFace.NegativeZ, size, size));
+            tex.SetPixels(size, size * 2, size, size, GetPixels(cubemap, CubemapFace.PositiveY, size, size));
+            tex.Apply();
+
+            return tex;
+        }
+        
+        
+        /// <summary>
+        /// 翻转的
+        /// </summary>
+        /// <param name="cubemap"></param>
+        /// <param name="face"></param>
+        /// <param name="width"></param>
+        /// <param name="height"></param>
+        /// <returns></returns>
+        public static Color[] GetPixels(Cubemap cubemap, CubemapFace face, int width, int height)
+        {
+            var colors = new Color[width*height];
+            for (int i = 0; i < height; i++)
+            {
+                for (int j = 0; j < width; j++)
+                {
+                    colors[i*height+j] = cubemap.GetPixel(face,j, height - i);
+                }
+            }
+            return colors;
+        }
     }
 }

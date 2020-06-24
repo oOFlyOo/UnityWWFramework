@@ -309,6 +309,13 @@ namespace WWFramework.UI.Editor
             return EditorGUILayout.TextField(label, text, style, options);
         }
 
+        public static string TextArea(string text, GUIStyle style = null)
+        {
+            style = style ?? TextAreaStyle;
+            
+            return EditorGUILayout.TextArea(text, style);
+        }
+
         public static string SearchCancelTextField(string text)
         {
             BeginHorizontal();
@@ -378,6 +385,11 @@ namespace WWFramework.UI.Editor
         public static Object ObjectField(Object obj, Type type = null, string title = "", bool allowSceneObjects = false)
         {
             return EditorGUILayout.ObjectField(title, obj, type, allowSceneObjects);
+        }
+        
+        public static T ObjectField<T>(Object obj, string title = "", bool allowSceneObjects = false) where T : Object
+        {
+            return (T)EditorGUILayout.ObjectField(title, obj, typeof(T), allowSceneObjects);
         }
 
 

@@ -22,7 +22,7 @@ Shader "WWFramework/Development/TestLightMode"
 			#pragma multi_compile_fwdbase
 
 			#include "Lighting.cginc"
-			#include "../WWFramework_Light.hlsl"
+			#include "../WWFramework_Lighting.hlsl"
 
 			struct appdata
 			{
@@ -123,7 +123,7 @@ Shader "WWFramework/Development/TestLightMode"
 
 			#include "Lighting.cginc"
 			#include "AutoLight.cginc"
-			#include "../WWFramework_Light.hlsl"
+			#include "../WWFramework_Lighting.hlsl"
 
 			struct appdata
 			{

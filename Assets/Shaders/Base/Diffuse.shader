@@ -21,7 +21,7 @@
 			#pragma multi_compile_fwdbase
 
 			#include "Lighting.cginc"
-			#include "../WWFramework_Light.hlsl"
+			#include "../WWFramework_Lighting.hlsl"
 
 			struct appdata
 			{
@@ -127,7 +127,7 @@
 
 			#include "Lighting.cginc"
 			#include "AutoLight.cginc"
-			#include "../WWFramework_Light.hlsl"
+			#include "../WWFramework_Lighting.hlsl"
 
 			struct appdata
 			{

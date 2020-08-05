@@ -17,7 +17,7 @@
 
 			#include "UnityCG.cginc"
 			#include "Lighting.cginc"
-			#include "../WWFramework_Light.hlsl"
+			#include "../WWFramework_Lighting.hlsl"
 
 			struct appdata
 			{

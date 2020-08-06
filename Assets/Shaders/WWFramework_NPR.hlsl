@@ -3,14 +3,14 @@
 
 
 // 顶点缩放
-// float4 PositionScaleOutline(float4 pos, float3 normal, half outlineWidth)
-// {
-// 	float4 normalizeVertex = normalize(pos);
-// 	half signVar = dot(normalizeVertex, normalize(normal)) < 0 ? - 1: 1;
-// 	float4 clipPos = UnityObjectToClipPos(float4(pos.xyz + signVar * normalizeVertex * outlineWidth, 1));
+float4 PositionScaleOutline(float4 pos, float3 normal, half outlineWidth)
+{
+	float4 normalizeVertex = normalize(pos);
+	half signVar = dot(normalizeVertex, normalize(normal)) < 0 ? - 1: 1;
+	float4 clipPos = UnityObjectToClipPos(float4(pos.xyz + signVar * normalizeVertex * outlineWidth, 1));
 
-// 	return clipPos;
-// }
+	return clipPos;
+}
 
 
 // 摄像机Z偏移，用于描边排除内描边

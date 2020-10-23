@@ -11,6 +11,7 @@ namespace WWFramework.Helper
         public const string ToonPBR = "Lyra/Char/ToonPBR";
         public const string OutlineToonPBR = "Lyra/Char/OutlineToonPBR";
         public const string StencilWrite = "Lyra/StencilWrite";
+        public const string DepthPass = "WWFramework/Base/DepthMap";
 
         private static Dictionary<string, Shader> _shaderDict;
 
@@ -39,9 +40,15 @@ namespace WWFramework.Helper
         public const string CharLightProperty = "_CharLightDir";
         public const string StencilWriteRefProperty = "_StencilWriteRef";
         public const string ShadowBias = "_ShadowBias";
-        public const string ShadowMatrix = "_ShadowMatrix";
+        public const string ShadowNormalBias = "_ShadowNormalBias";
+        public const string ShadowMatrixV = "_ShadowMatrixV";
+        public const string ShadowMatrixVP = "_ShadowMatrixVP";
+        public const string ShadowFarScale = "_ShadowFarScale";
+        public const string ShadowLightDir = "_ShadowLightDir";
         public const string ShadowIntensity = "_ShadowIntensity";
         public const string ShadowMap = "_ShadowMap";
+        public const string ShadowMapWidthScale = "_ShadowMapWidthScale";
+        public const string ShadowMapHeightScale = "_ShadowMapHeightScale";
     
         private static Dictionary<string, int> _propertyIDDict;
 
@@ -69,6 +76,9 @@ namespace WWFramework.Helper
         public const string CHAR_SHADOWMAP_ON = "_CHAR_SHADOWMAP_ON";
     
         #endregion
+    #region Shader Tag
+    public const string RenderTypeTag = "RenderType";
+    #endregion
 
         #region Shader 常用参数
         public const int TransparentHairQueue = (int) RenderQueue.AlphaTest + 1;

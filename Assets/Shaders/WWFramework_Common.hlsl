@@ -1,5 +1,15 @@
 
 
+float3 RotateAroundYInDegrees (float3 vertex, float degrees)
+{
+    float alpha = degrees * UNITY_PI / 180.0;
+    float sina, cosa;
+    sincos(alpha, sina, cosa);
+    float2x2 m = float2x2(cosa, -sina, sina, cosa);
+    return float3(mul(m, vertex.xz), vertex.y).xzy;
+}
+
+
 float3x3 RotationMatrix(float3 vAxis, float fAngle)
 {
     // compute sin/cos of fAngle

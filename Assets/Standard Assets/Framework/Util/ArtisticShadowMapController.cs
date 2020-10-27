@@ -217,7 +217,7 @@ namespace WWFramework.Util
             var rtFormat = RenderTextureFormat.ARGB32;
 
             _shadowMap = RenderTexture.GetTemporary(GetShadowMapWidth(), GetShadowMapHeight(), 24, rtFormat,
-                RenderTextureReadWrite.Default, 1);
+                RenderTextureReadWrite.Linear, 1);
             // _shadowMap.useMipMap = false;
             _shadowMap.filterMode = FilterMode.Bilinear;
 

@@ -1,6 +1,6 @@
 ﻿Shader "WWFramework/Base/DepthMap" {
     SubShader {
-        Tags { "RenderType"="Opaque" }
+        Tags { "RenderType"="Opaque" "DepthType"="DrawDepth" }
         Pass {
             CGPROGRAM
 

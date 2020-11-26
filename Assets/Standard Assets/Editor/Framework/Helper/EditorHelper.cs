@@ -8,10 +8,13 @@ using System.Net;
 using System.Reflection;
 using Microsoft.Win32;
 using UnityEditor;
+using UnityEditorInternal;
 using UnityEngine;
+using WWFramework.Extension;
 using WWFramework.Helper;
 using WWFramework.Reflection;
 using WWFramework.Util;
+using Debug = UnityEngine.Debug;
 using Object = UnityEngine.Object;
 
 namespace WWFramework.Helper.Editor
@@ -58,6 +61,74 @@ namespace WWFramework.Helper.Editor
         }
         #endregion
 
+        #region 组件辅助操作
+        public static void ReplaceComponents(Transform src, Transform dst, ComponentUtility.IsDesiredComponent filter = null)
+        {
+            if (filter == null)
+            {
+                filter = component => component.GetType() != typeof(Transform) ;
+            }
+            
+            ComponentUtility.ReplaceComponentsIfDifferent(src.gameObject, dst.gameObject, filter);
+
+            var scrComs = src.GetComponents<Component>();
+            var dstComs = dst.GetComponents<Component>();
+            for (int i = 0; i < scrComs.Length; i++)
+            {
+                if (!filter(scrComs[i]))
+                {
+                    continue;
+                }
+                
+                CopyComponent(scrComs[i], dstComs[i]);
+            }
+        }
+
+        public static void CopyComponent(Component src, Component dst)
+        {
+            var srcSo = new SerializedObject(src);
+            var dstSo = new SerializedObject(dst);
+
+            var scrIter = srcSo.GetIterator();
+            while (scrIter.NextVisible(true))
+            {
+                var obj = scrIter.objectReferenceValue;
+                if (obj == null)
+                {
+                    continue;
+                }
+
+                Transform objTrans = null;
+                if (obj is GameObject)
+                {
+                    objTrans = ((GameObject) obj).transform;
+                }
+                else if (obj is Transform)
+                {
+                    objTrans = (Transform)obj;
+                }
+
+                if (objTrans == null)
+                {
+                    continue;
+                }
+
+                if (!src.transform.IsParentOrSelf(objTrans))
+                {
+                    continue;
+                }
+                
+                var path = objTrans.GetHierarchyPath(src.transform, false);
+                var dstObjTrans = dst.transform.Find(path);
+
+                var dstSof = dstSo.FindProperty(scrIter.propertyPath);
+                // 如果找不到就赋值空
+                dstSof.objectReferenceValue = dstObjTrans ? dstObjTrans.GetComponent(obj.GetType()) : null;
+            }
+
+            dstSo.ApplyModifiedPropertiesWithoutUndo();
+        }
+        #endregion
 
         #region 提示的辅助
         public enum Result

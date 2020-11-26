@@ -26,10 +26,33 @@ namespace WWFramework.Extension
 
             if (trans != root && trans.parent != null)
             {
-                return string.Format("{0}/{1}", trans.parent.GetHierarchyPath(root), trans.name);
+                var hierarchy = trans.parent.GetHierarchyPath(root, includeRoot);
+                if (string.IsNullOrEmpty(hierarchy))
+                {
+                    return trans.name;
+                }
+                else
+                {
+                    return $"{hierarchy}/{trans.name}";
+                }
             }
 
             return trans.name;
+        }
+
+        public static bool IsParentOrSelf(this Transform root, Transform trans)
+        {
+            while (trans != null)
+            {
+                if (root == trans)
+                {
+                    return true;
+                }
+
+                trans = trans.parent;
+            }
+
+            return false;
         }
     }
 }

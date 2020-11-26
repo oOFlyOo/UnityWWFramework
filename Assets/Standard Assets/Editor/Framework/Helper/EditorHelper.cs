@@ -109,9 +109,9 @@ namespace WWFramework.Helper.Editor
                 {
                     objTrans = ((GameObject) obj).transform;
                 }
-                else if (obj is Transform)
+                else if (obj is Component)
                 {
-                    objTrans = (Transform)obj;
+                    objTrans = ((Component)obj).transform;
                 }
 
                 if (objTrans == null)

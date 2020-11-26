@@ -75,16 +75,22 @@ namespace WWFramework.Helper.Editor
             var dstComs = dst.GetComponents<Component>();
             for (int i = 0; i < scrComs.Length; i++)
             {
-                if (!filter(scrComs[i]))
+                var scrCom = scrComs[i];
+                if (!filter(scrCom))
                 {
                     continue;
                 }
-                
-                CopyComponent(scrComs[i], dstComs[i]);
+
+                var dstCom = dst.GetComponent(scrCom.GetType());
+                if (dstCom == null)
+                {
+                    return;
+                }
+                CopyComponentObjectReference(scrCom, dstCom);
             }
         }
 
-        public static void CopyComponent(Component src, Component dst)
+        public static void CopyComponentObjectReference(Component src, Component dst)
         {
             var srcSo = new SerializedObject(src);
             var dstSo = new SerializedObject(dst);

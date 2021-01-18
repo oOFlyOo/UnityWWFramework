@@ -1,6 +1,7 @@
 ﻿
 using System;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace WWFramework.Extension
 {
@@ -53,6 +54,17 @@ namespace WWFramework.Extension
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// 快速判空
+        /// 不能用于判空SerializeField和对象销毁
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        public static bool IsReferenceNull(this Object obj)
+        {
+            return ReferenceEquals(obj, null);
         }
     }
 }

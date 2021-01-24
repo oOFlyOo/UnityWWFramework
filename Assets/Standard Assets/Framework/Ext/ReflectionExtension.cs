@@ -2,7 +2,7 @@
 using System;
 using System.Reflection;
 
-namespace WWFramework.Reflection
+namespace WWFramework.Extension
 {
     public static class ReflectionExtension
     {

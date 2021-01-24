@@ -1,6 +1,7 @@
 ﻿
 using System;
 using UnityEditor;
+using UnityEditorInternal;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -416,6 +417,19 @@ namespace WWFramework.UI.Editor
             return EditorGUILayout.ToggleLeft(label, value, style, options);
         }
 
+    public static int LayerMask(int mask, string title)
+    {
+        var layerMask = EditorGUILayout.MaskField(title, InternalEditorUtility.LayerMaskToConcatenatedLayersMask(mask),
+            InternalEditorUtility.layers);
+
+        return InternalEditorUtility.ConcatenatedLayersMaskToLayerMask(layerMask);
+    }
+
+    public static void TexturePreview(Texture tex)
+    {
+        EditorGUI.DrawPreviewTexture(EditorGUILayout.GetControlRect(), tex);
+    }
+    
         #endregion
     }
 }

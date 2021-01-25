@@ -9,6 +9,8 @@ namespace WWFramework.Scene.Editor
     public class ScenePrefab
     {
         public GameObject Prefab;
-        public int Space;
+        public int Weight = 1;
+        public float MinScale = 1;
+        public float MaxScale = 1;
     }
 }

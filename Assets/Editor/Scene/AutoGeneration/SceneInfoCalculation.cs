@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using Object = UnityEngine.Object;
 using Random = UnityEngine.Random;
@@ -131,27 +132,34 @@ namespace WWFramework.Scene.Editor
         }
 
 
-        public static void GenerateBySceneInfo(ScenePrefab scenePrefab, Transform parent, Texture2D tex,
-            SceneRaycastInfo sceneInfo)
+        public static void GenerateBySceneInfo(List<ScenePrefab> scenePrefabs, Transform parent, Texture2D tex,
+            SceneRaycastInfo sceneInfo, int space)
         {
             var hits = sceneInfo.GetTopHits();
 
-            Generate(scenePrefab, parent, tex, hits);
+            Generate(scenePrefabs, parent, tex, hits, space);
             // GenerateByTexture(scenePrefab, parent, tex, sceneInfo.Center);
         }
 
-        public static void GenerateByTexture(ScenePrefab scenePrefab, Transform parent, Texture2D tex, Vector3 center)
+        public static void GenerateByTexture(List<ScenePrefab> scenePrefabs, Transform parent, Texture2D tex, Vector3 center, int space)
         {
             var hits = SceneJobUtility.RaycastGrid(center, tex.width, tex.height);
 
-            Generate(scenePrefab, parent, tex, hits);
+            Generate(scenePrefabs, parent, tex, hits, space);
         }
 
-        public static void Generate(ScenePrefab scenePrefab, Transform parent, Texture2D tex, RaycastHit[] hits)
+        public static void Generate(List<ScenePrefab> scenePrefabs, Transform parent, Texture2D tex, RaycastHit[] hits, int space)
         {
-            var prefab = scenePrefab.Prefab;
-            var space = scenePrefab.Space;
-
+            var totalWeight = 0;
+            foreach (var prefab in scenePrefabs)
+            {
+                totalWeight += prefab.Weight;
+            }
+            if (totalWeight == 0)
+            {
+                return;
+            }
+            
             var pixels = tex.GetPixels32();
             var generatePoses = new List<RaycastHit>();
             for (int i = 0; i < pixels.Length; i++)
@@ -163,7 +171,6 @@ namespace WWFramework.Scene.Editor
 
                 generatePoses.Add(hits[i]);
             }
-
             var generateNum = Mathf.CeilToInt(1f * generatePoses.Count / space);
             if (generateNum == 0)
             {
@@ -175,10 +182,30 @@ namespace WWFramework.Scene.Editor
                 var pos = Random.Range(0, generatePoses.Count - 1);
                 var hit = generatePoses[pos];
 
-                Object.Instantiate(prefab, hit.point, Quaternion.AngleAxis(Random.Range(0f, 360f), Vector3.up), parent);
+                var randomPrefab = GetRandomScenePrefab(scenePrefabs, totalWeight);
+                var go = Object.Instantiate(randomPrefab.Prefab, hit.point, Quaternion.AngleAxis(Random.Range(0f, 360f), Vector3.up), parent);
+                go.transform.localScale = Vector3.one * Random.Range(randomPrefab.MinScale, randomPrefab.MaxScale); 
 
                 generatePoses.RemoveAt(pos);
             }
+        }
+
+        private static ScenePrefab GetRandomScenePrefab(List<ScenePrefab> scenePrefabs, int totalWeight)
+        {
+            var randomWeight = Random.Range(0, totalWeight - 1);
+            var weight = 0;
+            foreach (var prefab in scenePrefabs)
+            {
+                var nextWeight = weight + prefab.Weight;
+                if (randomWeight >= weight && randomWeight < nextWeight)
+                {
+                    return prefab;
+                }
+
+                weight = nextWeight;
+            }
+
+            return scenePrefabs.Last();
         }
     }
 }

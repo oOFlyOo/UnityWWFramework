@@ -345,6 +345,16 @@ namespace WWFramework.UI.Editor
         {
             return EditorGUILayout.IntSlider(title, value, lValue, rValue);
         }
+        
+        public static float Slider(string title, float value, float lValue, float rValue)
+        {
+            return EditorGUILayout.Slider(title, value, lValue, rValue);
+        }
+        
+        public static void MinMaxSlider(string title, ref float minValue, ref float maxValue, float minLitmit, float maxLitmit)
+        {
+            EditorGUILayout.MinMaxSlider(title, ref minValue, ref maxValue, minLitmit, maxLitmit);
+        }
 
 
         private const int LimitedButtonClickTime = 60;

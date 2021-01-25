@@ -356,6 +356,11 @@ namespace WWFramework.UI.Editor
             EditorGUILayout.MinMaxSlider(title, ref minValue, ref maxValue, minLitmit, maxLitmit);
         }
 
+        public static Vector4 Vector4Field(string label, Vector4 value)
+        {
+            return EditorGUILayout.Vector4Field(label, value);
+        }
+
 
         private const int LimitedButtonClickTime = 60;
         private static long _lastButtonClickTime;

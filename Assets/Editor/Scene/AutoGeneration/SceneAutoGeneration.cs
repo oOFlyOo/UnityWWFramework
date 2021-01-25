@@ -44,6 +44,10 @@ namespace WWFramework.Scene.Editor
         private SceneRaycastInfo _sceneRaycastInfo = new SceneRaycastInfo();
         private Texture2D _previewTexture;
 
+        private Vector4 _noise = new Vector4(0, 0, 1, 1);
+        private float _noiseThreshold = 0.5f;
+        private Texture2D _finalTexture;
+
         private Vector2 _scenePrefabScrollPos;
         private List<ScenePrefab> _scenePrefabs = new List<ScenePrefab>();
 
@@ -77,6 +81,14 @@ namespace WWFramework.Scene.Editor
         
             EditorUIHelper.Space();
             EditorUIHelper.ObjectField<Texture>(_previewTexture, "预览");
+            
+            EditorUIHelper.Space();
+            _noise = EditorUIHelper.Vector4Field("noise偏移及缩放", _noise);
+            _noiseThreshold = EditorUIHelper.Slider("noise阈值", _noiseThreshold, 0, 1);
+            EditorUIHelper.Button("叠加噪声图", CompositionNoise);
+            
+            EditorUIHelper.Space();
+            EditorUIHelper.ObjectField<Texture>(_finalTexture, "叠加噪声图之后");
             
             EditorUIHelper.Space();
             _parent = EditorUIHelper.ObjectField<Transform>(_parent, "父节点", true);
@@ -142,6 +154,16 @@ namespace WWFramework.Scene.Editor
                 SceneInfoCalculation.GetTexture(_sceneRaycastInfo, _calculateType, _minRange, _maxRange, _generateLayerMask);
         }
 
+        private void CompositionNoise()
+        {
+            if (_previewTexture == null)
+            {
+                return;
+            }
+
+            _finalTexture = SceneInfoCalculation.CompositionNoise(_previewTexture, _noise, _noiseThreshold);
+        }
+
         private Transform[] GetSelections()
         {
             return Selection.GetTransforms(SelectionMode.TopLevel);
@@ -198,7 +220,7 @@ namespace WWFramework.Scene.Editor
                 }
             }
             
-            SceneInfoCalculation.GenerateBySceneInfo(_scenePrefabs, _parent, _previewTexture, _sceneRaycastInfo, _space);
+            SceneInfoCalculation.GenerateBySceneInfo(_scenePrefabs, _parent, _finalTexture != null ? _finalTexture : _previewTexture, _sceneRaycastInfo, _space);
         }
     }
 }

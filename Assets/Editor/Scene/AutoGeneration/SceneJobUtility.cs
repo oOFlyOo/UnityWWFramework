@@ -70,7 +70,6 @@ namespace WWFramework.Scene.Editor
             [ReadOnly] public Color32 HitColor;
             [ReadOnly] public Color32 GenerateColor;
 
-            [ReadOnly] public NativeArray<RaycastHit> Hits;
             [ReadOnly] public NativeArray<int> HitLayerMasks;
             [WriteOnly] public NativeArray<Color32> Pixels;
 
@@ -238,7 +237,7 @@ namespace WWFramework.Scene.Editor
 
         public static Color32[] CalculateGenerateTexture(SceneRaycastInfo sceneInfo, SceneInfoCalculation.CalculateType calType, int minRange, int maxRange, int generateLayerMask, Color32 noneColor, Color32 hitColor, Color32 generateColor)
         {
-            var hits = new NativeArray<RaycastHit>(sceneInfo.GetTopHits(), Allocator.TempJob);
+            var hits = sceneInfo.GetTopHits();
             var hitLayerMasks = new NativeArray<int>(hits.Length, Allocator.TempJob);
             for (int i = 0; i < hits.Length; i++)
             {
@@ -257,7 +256,6 @@ namespace WWFramework.Scene.Editor
                 NoneColor = noneColor,
                 HitColor = hitColor,
                 GenerateColor = generateColor,
-                Hits = hits,
                 HitLayerMasks = hitLayerMasks,
                 Pixels = pixels,
                 CalculateType = calType,
@@ -266,7 +264,6 @@ namespace WWFramework.Scene.Editor
 
             var texPixels = pixels.ToArray();
 
-            hits.Dispose();
             hitLayerMasks.Dispose();
             pixels.Dispose();
 

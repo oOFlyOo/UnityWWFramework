@@ -20,12 +20,17 @@ namespace WWFramework.Scene.Editor
             Outside,
         }
 
+        private static Texture2D CreateTexture2D(int width, int height)
+        {
+            return new Texture2D(width, height, TextureFormat.RGBA32, false, true);
+        }
+
         public static Texture2D GetTexture(SceneRaycastInfo sceneInfo, CalculateType calType, int minRange = -1, int maxRange = -1,
             int generateLayerMask = -1)
         {
             var width = sceneInfo.Width;
             var height = sceneInfo.Height;
-            var tex = new Texture2D(width, height, TextureFormat.RGBA32, false, true);
+            var tex = CreateTexture2D(width, height);
 
             var pixels = SceneJobUtility.CalculateGenerateTexture(sceneInfo, calType, minRange, maxRange, generateLayerMask, NoneColor, HitColor, GenerateColor);
 
@@ -33,6 +38,36 @@ namespace WWFramework.Scene.Editor
             tex.Apply();
 
             return tex;
+        }
+
+        public static Texture2D CompositionNoise(Texture2D tex, Vector4 noise, float threshold)
+        {
+            var width = tex.width;
+            var inverseWidth = 1f / width;
+            var height = tex.height;
+            var inverseHeight = 1f / height;
+            var pixels = tex.GetPixels32();
+
+            for (int i = 0; i < pixels.Length; i++)
+            {
+                var pixel = pixels[i];
+                if (!pixel.Equals(GenerateColor))
+                {
+                    continue;
+                }
+
+                var x = i % width;
+                var y = i / width;
+                
+                var noiseValue = Mathf.PerlinNoise(noise.x + x * inverseWidth * noise.z, noise.y + y * inverseHeight * noise.w);
+                pixels[i] = noiseValue >= threshold ? GenerateColor : HitColor;
+            }
+
+            var finalTex = CreateTexture2D(width, height);
+            finalTex.SetPixels32(pixels);
+            finalTex.Apply();
+
+            return finalTex;
         }
 
         public static Texture2D GetTextureWithoutJob(SceneRaycastInfo sceneInfo, CalculateType calType, int range = -1,

@@ -3,7 +3,7 @@ using UnityEditor;
 
 namespace WWFramework.Optimization.Editor
 {
-    public class AssetImporterSettingPostprocessor: AssetPostprocessor
+    public class AssetImporterSettingPostprocessor//: AssetPostprocessor
     {
         private static void OnPostprocessAllAssets(string[] importedAssets, string[] deletedAssets, string[] movedAssets,
             string[] movedFromAssetPaths)

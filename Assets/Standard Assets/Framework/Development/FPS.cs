@@ -9,6 +9,7 @@ namespace WWFramework.Development
         private bool _forceCloseVSync = true;
         [SerializeField, Range(1, 3)]
         private float _checkDelta = 1f;
+        [SerializeField] private Vector2 _offset = new Vector2(20, 10);
 
         private int _frameCount;
         private float _timePassed;
@@ -48,7 +49,7 @@ namespace WWFramework.Development
             var fontSize = Screen.height/20;
             _style.fontSize = fontSize;
 
-            GUI.Label(new Rect(0, 0, fontSize * 3, fontSize), string.Format("{0:F0}", _fps), _style);
+            GUI.Label(new Rect(_offset.x, _offset.y, fontSize * 3, fontSize), string.Format("{0:F0}", _fps), _style);
         }
     }
 }

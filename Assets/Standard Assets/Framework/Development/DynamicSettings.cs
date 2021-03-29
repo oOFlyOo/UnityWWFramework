@@ -7,6 +7,7 @@ namespace WWFramework.Development
 {
     public class DynamicSettings : MonoBehaviour
     {
+        [SerializeField] private Vector2 _offset = new Vector2(20, 10);
         [SerializeField] private Vector2 _defaultScreenResolution = new Vector2(1334, 750);
         [SerializeField] private Vector2 _defaultBtnSize = new Vector2(160, 50);
         [SerializeField] private float _space = 10;
@@ -31,7 +32,7 @@ namespace WWFramework.Development
     
         private void OnGUI()
         {
-            var startPos = new Vector2(0, _spaceHeight);
+            var startPos = new Vector2(0, _spaceHeight) + _offset;
             foreach (var btnFunc in _btnFuncs)
             {
                 if (GUI.Button(new Rect(startPos, _dynamicBtnSize), btnFunc.Item1()))

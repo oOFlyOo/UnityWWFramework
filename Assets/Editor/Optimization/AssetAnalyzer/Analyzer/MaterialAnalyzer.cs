@@ -4,50 +4,12 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using WWFramework.Helper.Editor;
-using WWFramework.Optimization.Editor;
 using WWFramework.UI.Editor;
 
-namespace WWFramework.Optimaztion.Editor
+namespace WWFramework.Optimization.Editor
 {
     public class MaterialAnalyzer: BaseAssetAnalyzer<Material>
     {
-        private List<Material> _sickMaterials = new List<Material>();
-
-        public override void Analyse(Object[] assets)
-        {
-            var mats = GetObjects(assets);
-
-            _sickMaterials = mats.Where(mat => IsSickAsset(mat)).ToList();
-        }
-
-        public override void ShowResult()
-        {
-            base.ShowResult();
-
-            foreach (var sickMaterial in _sickMaterials)
-            {
-                EditorUIHelper.BeginHorizontal();
-                {
-                    EditorUIHelper.ObjectField(sickMaterial);
-                    EditorUIHelper.Space();
-                    EditorUIHelper.Button("修正", () => 
-                    {
-                        IsSickAsset(sickMaterial, true);
-                    });
-                }
-                EditorUIHelper.EndHorizontal();
-            }
-        }
-
-        public override void CorrectAll()
-        {
-            foreach (var mat in _sickMaterials)
-            {
-                IsSickAsset(mat, true, false);
-            }
-            AssetDatabase.SaveAssets();
-        }
-
         protected override List<Material> GetFilterObjects(Object[] assets)
         {
             return assets.ToList().ConvertAll(input => input as Material);
@@ -64,34 +26,32 @@ namespace WWFramework.Optimaztion.Editor
             var correct = false;
 
             var matInfo = new SerializedObject(obj);
-            var propArry = matInfo.FindProperty("m_SavedProperties");
-            propArry.Next(true);
+            var propArray = matInfo.FindProperty("m_SavedProperties");
+            propArray.Next(true);
             do
             {
-                if (!propArry.isArray)
+                if (propArray.isArray)
                 {
-                    continue;
-                }
-
-                for (int i = propArry.arraySize - 1; i >= 0; --i)
-                {
-                    var prop =
-                        propArry.GetArrayElementAtIndex(i).FindPropertyRelative("first").FindPropertyRelative("name");
-                    if (!obj.HasProperty(prop.stringValue))
+                    for (int i = propArray.arraySize - 1; i >= 0; --i)
                     {
-                        if (needCorrect)
+                        var prop =
+                            propArray.GetArrayElementAtIndex(i);
+                        if (!obj.HasProperty(prop.displayName))
                         {
-                            correct = true;
-                            propArry.DeleteArrayElementAtIndex(i);
-                        }
-                        else
-                        {
-                            return true;
+                            if (needCorrect)
+                            {
+                                correct = true;
+                                propArray.DeleteArrayElementAtIndex(i);
+                            }
+                            else
+                            {
+                                return true;
+                            }
                         }
                     }
                 }
-            } while (propArry.Next(false));
-
+            } while (propArray.Next(false));
+            
             if (correct)
             {
                 matInfo.ApplyModifiedProperties();

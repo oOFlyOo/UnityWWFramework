@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
@@ -10,9 +9,11 @@ namespace WWFramework.UI.Editor
     public static class EditorUIHelper
     {
         #region GUIStyle
+
         private const int NormalFontSize = 20;
 
         private static GUIStyle _leftButtonStyle;
+
         public static GUIStyle LeftButtonStyle
         {
             get
@@ -22,11 +23,13 @@ namespace WWFramework.UI.Editor
                     _leftButtonStyle = new GUIStyle(GUI.skin.button);
                     _leftButtonStyle.alignment = TextAnchor.MiddleLeft;
                 }
+
                 return _leftButtonStyle;
             }
         }
 
         private static GUIStyle _rightButtonStyle;
+
         public static GUIStyle RightButtonStyle
         {
             get
@@ -36,11 +39,13 @@ namespace WWFramework.UI.Editor
                     _rightButtonStyle = new GUIStyle(GUI.skin.button);
                     _rightButtonStyle.alignment = TextAnchor.MiddleRight;
                 }
+
                 return _rightButtonStyle;
             }
         }
 
         private static GUIStyle _normalButtonStyle;
+
         public static GUIStyle NormalButtonStyle
         {
             get
@@ -50,11 +55,13 @@ namespace WWFramework.UI.Editor
                     _normalButtonStyle = new GUIStyle(GUI.skin.button);
                     _normalButtonStyle.fontSize = NormalFontSize;
                 }
+
                 return _normalButtonStyle;
             }
         }
 
         private static GUIStyle _buttonStyle;
+
         public static GUIStyle ButtonStyle
         {
             get
@@ -63,11 +70,13 @@ namespace WWFramework.UI.Editor
                 {
                     _buttonStyle = new GUIStyle(GUI.skin.button);
                 }
+
                 return _buttonStyle;
             }
         }
 
         private static GUIStyle _searchTextField;
+
         public static GUIStyle SearchTextField
         {
             get
@@ -76,11 +85,13 @@ namespace WWFramework.UI.Editor
                 {
                     _searchTextField = new GUIStyle("SearchTextField");
                 }
+
                 return _searchTextField;
             }
         }
 
         private static GUIStyle _searchCancelButton;
+
         public static GUIStyle SearchCancelButton
         {
             get
@@ -89,11 +100,13 @@ namespace WWFramework.UI.Editor
                 {
                     _searchCancelButton = new GUIStyle("SearchCancelButton");
                 }
+
                 return _searchCancelButton;
             }
         }
 
         private static GUIStyle _searchCancelButtonEmpty;
+
         public static GUIStyle SearchCancelButtonEmpty
         {
             get
@@ -102,11 +115,13 @@ namespace WWFramework.UI.Editor
                 {
                     _searchCancelButtonEmpty = new GUIStyle("SearchCancelButtonEmpty");
                 }
+
                 return _searchCancelButtonEmpty;
             }
         }
 
         private static GUIStyle _buttonLeft;
+
         public static GUIStyle ButtonLeft
         {
             get
@@ -115,11 +130,13 @@ namespace WWFramework.UI.Editor
                 {
                     _buttonLeft = new GUIStyle("ButtonLeft");
                 }
+
                 return _buttonLeft;
             }
         }
 
         private static GUIStyle _buttonMid;
+
         public static GUIStyle ButtonMid
         {
             get
@@ -128,11 +145,13 @@ namespace WWFramework.UI.Editor
                 {
                     _buttonMid = new GUIStyle("ButtonMid");
                 }
+
                 return _buttonMid;
             }
         }
 
         private static GUIStyle _buttonRight;
+
         public static GUIStyle ButtonRight
         {
             get
@@ -141,11 +160,13 @@ namespace WWFramework.UI.Editor
                 {
                     _buttonRight = new GUIStyle("ButtonRight");
                 }
+
                 return _buttonRight;
             }
         }
 
         private static GUIStyle _textFieldStyle;
+
         public static GUIStyle TextFieldStyle
         {
             get
@@ -154,11 +175,13 @@ namespace WWFramework.UI.Editor
                 {
                     _textFieldStyle = new GUIStyle("TextField");
                 }
+
                 return _textFieldStyle;
             }
         }
 
         private static GUIStyle _textAreaStyle;
+
         public static GUIStyle TextAreaStyle
         {
             get
@@ -167,11 +190,13 @@ namespace WWFramework.UI.Editor
                 {
                     _textAreaStyle = new GUIStyle("TextArea");
                 }
+
                 return _textAreaStyle;
             }
         }
 
         private static GUIStyle _redLabelStyle;
+
         public static GUIStyle RedLabelStyle
         {
             get
@@ -181,11 +206,13 @@ namespace WWFramework.UI.Editor
                     _redLabelStyle = new GUIStyle(GUI.skin.label);
                     _redLabelStyle.normal.textColor = Color.red;
                 }
+
                 return _redLabelStyle;
             }
         }
 
         private static GUIStyle _yellowLabelStyle;
+
         public static GUIStyle YellowLabelStyle
         {
             get
@@ -195,9 +222,11 @@ namespace WWFramework.UI.Editor
                     _yellowLabelStyle = new GUIStyle(GUI.skin.label);
                     _yellowLabelStyle.normal.textColor = Color.yellow;
                 }
+
                 return _yellowLabelStyle;
             }
         }
+
         #endregion
 
         #region 常用封装
@@ -303,7 +332,8 @@ namespace WWFramework.UI.Editor
         }
 
 
-        public static string TextField(string label, string text, GUIStyle style = null, params GUILayoutOption[] options)
+        public static string TextField(string label, string text, GUIStyle style = null,
+            params GUILayoutOption[] options)
         {
             style = style ?? GUI.skin.textField;
 
@@ -313,7 +343,7 @@ namespace WWFramework.UI.Editor
         public static string TextArea(string text, GUIStyle style = null)
         {
             style = style ?? TextAreaStyle;
-            
+
             return EditorGUILayout.TextArea(text, style);
         }
 
@@ -345,13 +375,14 @@ namespace WWFramework.UI.Editor
         {
             return EditorGUILayout.IntSlider(title, value, lValue, rValue);
         }
-        
+
         public static float Slider(string title, float value, float lValue, float rValue)
         {
             return EditorGUILayout.Slider(title, value, lValue, rValue);
         }
-        
-        public static void MinMaxSlider(string title, ref float minValue, ref float maxValue, float minLitmit, float maxLitmit)
+
+        public static void MinMaxSlider(string title, ref float minValue, ref float maxValue, float minLitmit,
+            float maxLitmit)
         {
             EditorGUILayout.MinMaxSlider(title, ref minValue, ref maxValue, minLitmit, maxLitmit);
         }
@@ -388,7 +419,7 @@ namespace WWFramework.UI.Editor
         public static T EnumPopup<T>(Enum selectedEnum, string title = "", GUIStyle style = null)
         {
             style = style ?? EditorStyles.popup;
-            return (T)Convert.ChangeType(EditorGUILayout.EnumPopup(title, selectedEnum, style), typeof(T));
+            return (T) Convert.ChangeType(EditorGUILayout.EnumPopup(title, selectedEnum, style), typeof(T));
         }
 
         public static int Popup(string title, int index, string[] displayedOptions, GUIStyle style = null)
@@ -398,14 +429,15 @@ namespace WWFramework.UI.Editor
         }
 
 
-        public static Object ObjectField(Object obj, Type type = null, string title = "", bool allowSceneObjects = false)
+        public static Object ObjectField(Object obj, Type type = null, string title = "",
+            bool allowSceneObjects = false)
         {
             return EditorGUILayout.ObjectField(title, obj, type, allowSceneObjects);
         }
-        
+
         public static T ObjectField<T>(Object obj, string title = "", bool allowSceneObjects = false) where T : Object
         {
-            return (T)EditorGUILayout.ObjectField(title, obj, typeof(T), allowSceneObjects);
+            return (T) EditorGUILayout.ObjectField(title, obj, typeof(T), allowSceneObjects);
         }
 
 
@@ -432,19 +464,23 @@ namespace WWFramework.UI.Editor
             return EditorGUILayout.ToggleLeft(label, value, style, options);
         }
 
-    public static int LayerMask(int mask, string title)
-    {
-        var layerMask = EditorGUILayout.MaskField(title, InternalEditorUtility.LayerMaskToConcatenatedLayersMask(mask),
-            InternalEditorUtility.layers);
+        public static int LayerMask(int mask, string title)
+        {
+            var layerMask = EditorGUILayout.MaskField(title,
+                InternalEditorUtility.LayerMaskToConcatenatedLayersMask(mask),
+                InternalEditorUtility.layers);
 
-        return InternalEditorUtility.ConcatenatedLayersMaskToLayerMask(layerMask);
-    }
+            return InternalEditorUtility.ConcatenatedLayersMaskToLayerMask(layerMask);
+        }
 
-    public static void TexturePreview(Texture tex)
-    {
-        EditorGUI.DrawPreviewTexture(EditorGUILayout.GetControlRect(), tex);
-    }
-    
+        public static void TexturePreview(Texture tex)
+        {
+            // Editor 完整展示
+            GUILayout.Label(tex);
+            // EditorGUI.DrawPreviewTexture(EditorGUILayout.GetControlRect(), tex, null, ScaleMode.ScaleToFit);
+            // GUI.DrawTexture(EditorGUILayout.GetControlRect(), tex, ScaleMode.ScaleToFit);
+        }
+
         #endregion
     }
 }

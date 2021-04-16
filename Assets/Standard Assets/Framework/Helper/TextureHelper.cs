@@ -1,52 +1,202 @@
 ﻿
 using System;
 using UnityEngine;
+using UnityEngine.Experimental.Rendering;
+
+#if  UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace WWFramework.Helper
 {
     public static class TextureHelper
     {
-        public static Texture2D ResizeTexture(Texture2D source, int targetWidth, int targetHeight)
+        public static bool IsLinearFormat(Texture2D tex)
         {
-            if (source == null)
+            return !GraphicsFormatUtility.IsSRGBFormat(tex.graphicsFormat);
+        }
+
+        public static bool IsCompressedFormat(Texture2D tex)
+        {
+            return GraphicsFormatUtility.IsCompressedFormat(tex.graphicsFormat);
+        }
+        
+        public static bool IsCompressedFormat(TextureFormat format, bool isLinear)
+        {
+            return GraphicsFormatUtility.IsCompressedFormat(GraphicsFormatUtility.GetGraphicsFormat(format, isLinear));
+        }
+
+        public static void CompressTexture(Texture2D tex, TextureFormat format, int quality = 100)
+        {
+#if UNITY_EDITOR
+            EditorUtility.CompressTexture(tex, format, quality);
+            tex.Apply(false);
+#endif
+        }
+        
+        public static Texture2D ResizeTexture(Texture2D tex, int targetWidth, int targetHeight, TextureFormat format)
+        {
+            if (tex == null)
             {
                 return null;
             }
 
-            var result = new Texture2D(targetWidth, targetHeight, source.format, false);
+            var mipmapCount = tex.mipmapCount;
+            var result = new Texture2D(targetWidth, targetHeight, format, mipmapCount, IsLinearFormat(tex));
+            
             try
             {
-                var incX = 1f / targetWidth;
-                var incY = 1f / targetHeight;
-                var newColors = new Color[targetWidth * targetHeight];
-                for (int i = 0; i < result.height; i++)
-                {
-                    for (int j = 0; j < result.width; j++)
-                    {
-                        newColors[i * result.width + j] = source.GetPixelBilinear(incX * j, incY * i);
-                    }
-                }
+                tex = ReadableClone(tex, tex.format);
 
-                result.SetPixels(newColors);
-                result.Apply();
+                for (int mip = 0; mip < mipmapCount; mip++)
+                {
+                    var width = targetWidth / (2 ^ mip);
+                    var height = targetHeight / (2 ^ mip);
+                    var incX = 1f / width;
+                    var incY = 1f / height;
+                    var newColors = new Color[width * height];
+                    
+                    for (int i = 0; i < result.height; i++)
+                    {
+                        for (int j = 0; j < result.width; j++)
+                        {
+                            newColors[i * result.width + j] = tex.GetPixelBilinear(incX * j, incY * i, mip);
+                        }
+                    }
+                    result.SetPixels(newColors, mip);
+                }
+                
+                result.Apply(false);
             }
             catch (Exception e)
             {
-                result = source;
+                result = tex;
             }
 
             return result;
         }
 
 
-        public static Texture2D LimitingTextureSize(Texture2D tex, int limitedWidth, int limitedHeight)
+        public static Texture2D ReadableCloneByRenderTexture(Texture2D tex)
+        {
+            var renderTex = RenderTexture.GetTemporary(
+                tex.width,
+                tex.height,
+                0,
+                RenderTextureFormat.Default,
+                RenderTextureReadWrite.Linear);
+
+            Graphics.Blit(tex, renderTex);
+            var previous = RenderTexture.active;
+            RenderTexture.active = renderTex;
+            var readableText = new Texture2D(tex.width, tex.height);
+            readableText.ReadPixels(new Rect(0, 0, renderTex.width, renderTex.height), 0, 0);
+            readableText.Apply();
+            RenderTexture.active = previous;
+            RenderTexture.ReleaseTemporary(renderTex);
+            
+            return readableText;
+        }
+
+
+        public static Texture2D ReadableClone(Texture2D tex, TextureFormat format)
+        {
+            // Graphics.CopyTexture can only copy between same texture format groups (d3d11 base formats: src=0 dst=27)
+            // 对比的是TextureFormat，而不是GraphicsFormat
+            if (!tex.isReadable || tex.format != format)
+            {
+                Texture2D newTex = null;
+
+                if (tex.format == format)
+                {
+                    newTex = new Texture2D(tex.width, tex.height, format, tex.mipmapCount, IsLinearFormat(tex));
+
+                    // 实际上设置的格式不一定就是最终格式
+                    if (newTex.format == tex.format)
+                    {
+                        Graphics.CopyTexture(tex, newTex);
+                    }
+                    else
+                    {
+                        newTex.LoadRawTextureData(tex.GetRawTextureData());
+                        newTex.Apply(false);
+                    }
+                }
+                else
+                {
+                    tex = ReadableClone(tex, tex.format);
+
+                    if (IsCompressedFormat(format, IsLinearFormat(tex)))
+                    {
+                        tex = UnCompressedClone(tex);
+                        CompressTexture(tex, format);
+
+                        newTex = tex;
+                    }
+                    else
+                    {
+                        newTex = new Texture2D(tex.width, tex.height, format, tex.mipmapCount, IsLinearFormat(tex));
+                        
+                        for (int mip = 0; mip < tex.mipmapCount; mip++)
+                        {
+                            newTex.SetPixels(tex.GetPixels(mip), mip);
+                        }
+                    }
+                }
+                newTex.Apply(false);
+                
+                return newTex;
+            }
+
+            return tex;
+        }
+
+        public static Texture2D UnCompressedClone(Texture2D tex)
+        {
+            if (IsCompressedFormat(tex))
+            {
+                tex = ReadableClone(tex, tex.format);
+
+                var mipmapCount = tex.mipmapCount;
+                var newTex = new Texture2D(tex.width, tex.height, TextureFormat.ARGB32, mipmapCount, IsLinearFormat(tex));
+                for (int i = 0; i < tex.mipmapCount; i++)
+                {
+                    newTex.SetPixels(tex.GetPixels(i), i);
+                }
+                newTex.Apply(false);
+
+                return newTex;
+            }
+            
+            return tex;
+        }
+
+        public static void CopyToTexture2DArray(Texture2D tex, Texture2DArray texArr, int dst)
+        {
+            if (tex.width != texArr.height || tex.height != texArr.height)
+            {
+                tex = ResizeTexture(tex, texArr.width, texArr.height, texArr.format);
+            }
+            else if (tex.format != texArr.format)
+            {
+                tex = ReadableClone(tex, texArr.format);
+            }
+
+            for (int i = 0; i < tex.mipmapCount; i++)
+            {
+                Graphics.CopyTexture(tex, 0, i, texArr, dst, i);
+            }
+        }
+
+
+        public static Texture2D LimitingTextureSize(Texture2D tex, int limitedWidth, int limitedHeight, TextureFormat format)
         {
             if (tex.width > limitedWidth || tex.height > limitedHeight)
             {
                 var widthScale = 1f * limitedWidth / tex.width;
                 var heightScale = 1f * limitedHeight / tex.height;
                 var scale = Mathf.Min(widthScale, heightScale);
-                return ResizeTexture(tex, (int)(tex.width * scale), (int)(tex.height * scale));
+                return ResizeTexture(tex, (int)(tex.width * scale), (int)(tex.height * scale), format);
             }
             else
             {

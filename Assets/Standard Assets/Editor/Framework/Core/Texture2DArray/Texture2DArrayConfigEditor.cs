@@ -28,8 +28,10 @@ namespace WWFramework.Core.Editor
             }
 
             var firstTex = texs[0];
-            var texArray = new Texture2DArray(firstTex.width, firstTex.height, texs.Count, config.Format,
-                firstTex.mipmapCount, config.IsLinear);
+            var format = config.UseFirstTextureSettings ? firstTex.format : config.Format;
+            var isLinear = config.UseFirstTextureSettings ? TextureHelper.IsLinearFormat(firstTex) : config.IsLinear;
+            var texArray = new Texture2DArray(firstTex.width, firstTex.height, texs.Count, format,
+                firstTex.mipmapCount, isLinear);
 
             for (int i = 0; i < texs.Count; i++)
             {
@@ -51,8 +53,11 @@ namespace WWFramework.Core.Editor
             else
             {
                 config.TexArray = texArray;
-                AssetDatabase.AddObjectToAsset(config);
+                AssetDatabase.AddObjectToAsset(texArray,config);
             }
+            config.TexArray.name = config.name; 
+
+            AssetDatabase.SaveAssets();
         }
     }
 }

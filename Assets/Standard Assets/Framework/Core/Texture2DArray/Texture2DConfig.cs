@@ -9,6 +9,7 @@ namespace WWFramework.Core
     {
         public TextureFormat Format = TextureFormat.ASTC_4x4;
         public bool IsLinear = false;
+        public bool UseFirstTextureSettings = false;
     
         public List<Texture2D> Textures;
         public Texture2DArray TexArray;

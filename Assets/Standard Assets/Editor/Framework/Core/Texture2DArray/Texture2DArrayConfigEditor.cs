@@ -1,8 +1,10 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using DG.Tweening.Plugins.Core.PathCore;
 using UnityEditor;
 using UnityEngine;
 using WWFramework.Helper;
+using Path = System.IO.Path;
 
 namespace WWFramework.Core.Editor
 {
@@ -17,6 +19,13 @@ namespace WWFramework.Core.Editor
             {
                 Generate((Texture2DArrayConfig)target);
             }
+        }
+
+        public static string GetTexture2DArrayPath(Texture2DArrayConfig config)
+        {
+            var path = AssetDatabase.GetAssetPath(config);
+
+            return $"{Path.GetDirectoryName(path)}/{Path.GetFileNameWithoutExtension(path)}_array.asset";
         }
 
         public static void Generate(Texture2DArrayConfig config)
@@ -46,16 +55,23 @@ namespace WWFramework.Core.Editor
             
             texArray.Apply(false);
 
-            if (config.TexArray)
+            var configArr = config.TexArray;
+            if (configArr == null)
             {
-                EditorUtility.CopySerialized(texArray, config.TexArray);
+                configArr = AssetDatabase.LoadAssetAtPath<Texture2DArray>(GetTexture2DArrayPath(config));
+            }
+
+            if (configArr == null)
+            {
+                config.TexArray = texArray;
+                config.TexArray.name = config.name; 
+                AssetDatabase.CreateAsset(texArray, GetTexture2DArrayPath(config));
             }
             else
             {
-                config.TexArray = texArray;
-                AssetDatabase.AddObjectToAsset(texArray,config);
+                config.TexArray = configArr;
+                EditorUtility.CopySerialized(texArray, config.TexArray);
             }
-            config.TexArray.name = config.name; 
 
             AssetDatabase.SaveAssets();
         }

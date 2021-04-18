@@ -14,6 +14,8 @@ namespace WWFramework.Core.Editor
         public override void OnInspectorGUI()
         {
             base.OnInspectorGUI();
+            
+            GUILayout.Space(1);
 
             if (GUILayout.Button("生成"))
             {

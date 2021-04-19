@@ -79,6 +79,8 @@ namespace WWFramework.Core
             FindOrCreateTextureConfigIfMissing(ref config.DiffuseArrayConfig, GetDiffuseConfigPath(config));
             FindOrCreateTextureConfigIfMissing(ref config.NormalArrayConfig, GetNormalConfigPath(config));
 
+            config.DiffuseArrayConfig.Textures.Clear();
+            config.NormalArrayConfig.Textures.Clear();
             foreach (var layer in config.Layers)
             {
                 AddTextureToConfig(config.DiffuseArrayConfig, layer.diffuseTexture);

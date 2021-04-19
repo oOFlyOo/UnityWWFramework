@@ -52,10 +52,11 @@ namespace WWFramework.Core
             terrain.SetSplatMaterialPropertyBlock(_block);
         }
 
-        public void InitConverter(Terrain terrain, TerrainLayerArrayConfig config)
+        public void InitConverter(TerrainLayerArrayConfig config)
         {
             InitParams();
-            
+            var terrain = GetComponent<Terrain>();
+
             ControlArray.Clear();
             ControlArray.AddRange(terrain.terrainData.alphamapTextures);
 

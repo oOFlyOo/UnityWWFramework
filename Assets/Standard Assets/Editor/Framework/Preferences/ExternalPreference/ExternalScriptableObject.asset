@@ -14,8 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ToolList:
   - ToolPath: 
-    Extension: shader
-  - ToolPath: 
     Extension: xml
   - ToolPath: 
     Extension: txt
@@ -23,7 +21,3 @@ MonoBehaviour:
     Extension: json
   - ToolPath: 
     Extension: prefab
-  - ToolPath: 
-    Extension: cginc
-  - ToolPath: 
-    Extension: hlsl

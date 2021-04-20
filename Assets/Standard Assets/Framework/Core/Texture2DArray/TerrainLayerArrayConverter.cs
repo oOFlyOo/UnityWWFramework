@@ -12,7 +12,8 @@ namespace WWFramework.Core
 
         public Texture2DArray DiffuseArray;
         public Texture2DArray NormalArray;
-        public List<float> Indexes = new List<float>();
+        public List<float> DiffuseIndexes = new List<float>();
+        public List<float> NormalIndexes = new List<float>();
         public List<Vector4> Tillings = new List<Vector4>();
 
         private MaterialPropertyBlock _block;
@@ -36,6 +37,8 @@ namespace WWFramework.Core
                 return;
             }
             
+            _block.Clear();
+            
             for (int i = 0; i < ControlArray.Count; i++)
             {
                 var control = ControlArray[i];
@@ -44,8 +47,9 @@ namespace WWFramework.Core
             
             _block.SetTexture("_DiffuseArray", DiffuseArray);
             _block.SetTexture("_NormalArray", NormalArray);
-            
-            _block.SetFloatArray("_Indexes", Indexes);
+
+            _block.SetFloatArray("_DiffuseIndexes", DiffuseIndexes);
+            _block.SetFloatArray("_NoralMalIndexes", NormalIndexes);
             _block.SetVectorArray("_Splats_ST", Tillings);
 
             var terrain = GetComponent<Terrain>();
@@ -63,31 +67,17 @@ namespace WWFramework.Core
             DiffuseArray = config.DiffuseArrayConfig.TexArray;
             NormalArray = config.NormalArrayConfig.TexArray;
             
-            Indexes.Clear();
+            DiffuseIndexes.Clear();
+            NormalIndexes.Clear();
             Tillings.Clear();
-            var tillings = new Vector4[16];
             for (int i = 0; i < terrain.terrainData.terrainLayers.Length; i++)
             {
                 var layer = terrain.terrainData.terrainLayers[i];
-                var index = config.DiffuseArrayConfig.Textures.IndexOf(layer.diffuseTexture);
-                Indexes.Add(index);
-                tillings[index] = new Vector4(terrain.terrainData.size.x / layer.tileSize.x, terrain.terrainData.size.z / layer.tileSize.y, layer.tileOffset.x / layer.tileSize.x, layer.tileOffset.y/ layer.tileSize.y);
+                DiffuseIndexes.Add(config.DiffuseArrayConfig.Textures.IndexOf(layer.diffuseTexture));
+                NormalIndexes.Add(config.NormalArrayConfig.Textures.IndexOf(layer.normalMapTexture));
+                var tilling = new Vector4(terrain.terrainData.size.x / layer.tileSize.x, terrain.terrainData.size.z / layer.tileSize.y, layer.tileOffset.x / layer.tileSize.x, layer.tileOffset.y/ layer.tileSize.y);
+                Tillings.Add(tilling);
             }
-
-            for (int i = 0; i < tillings.Length; i++)
-            {
-                var tilling = tillings[i];
-
-                if (tilling != Vector4.zero)
-                {
-                    Tillings.Add(tilling);
-                }
-                else
-                {
-                    break;
-                }
-            }
-
         }
     }
 }

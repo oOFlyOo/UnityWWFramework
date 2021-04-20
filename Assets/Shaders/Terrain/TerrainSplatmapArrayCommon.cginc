@@ -131,8 +131,8 @@ void SplatmapVert(inout appdata_full v, out Input data)
     fixed normal_index_##index = _NoralMalIndexes[index]; \
     float4 splat_##index = _Splats_ST[index]; \
     float2 uvSplat_##index = coord * splat_##index.xy + splat_##index.zw; \
-    diffuse += splat_control_##controlIndex.##channel * UNITY_SAMPLE_TEX2DARRAY(_DiffuseArray, float3(uvSplat_##index, diffuse_index_##index)) * half4(1.0, 1.0, 1.0, defaultAlpha.##channel); \
-    normal += UnpackNormalWithScale(UNITY_SAMPLE_TEX2DARRAY(_NormalArray, float3(uvSplat_##index, normal_index_##index)), 1) * splat_control_##controlIndex.##channel;
+    diffuse += splat_control_##controlIndex.##channel * UNITY_SAMPLE_TEX2DARRAY(_DiffuseArray, float3(uvSplat_##index, diffuse_index_##index)) * half4(1.0, 1.0, 1.0, defaultAlpha.##channel) * saturate(diffuse_index_##index + 1); \
+    normal += UnpackNormalWithScale(UNITY_SAMPLE_TEX2DARRAY(_NormalArray, float3(uvSplat_##index, normal_index_##index)), 1) * splat_control_##controlIndex.##channel * saturate(diffuse_index_##index + 1);
 
 #define SplatmapMixFour(diffuse, normal, controlIndex, coord) \
     SplatmapControl(controlIndex, coord); \

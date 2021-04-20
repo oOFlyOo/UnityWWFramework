@@ -1,10 +1,9 @@
-﻿
-using System;
+﻿using System;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
-
-#if  UNITY_EDITOR
+#if UNITY_EDITOR
 using UnityEditor;
+
 #endif
 
 namespace WWFramework.Helper
@@ -20,20 +19,56 @@ namespace WWFramework.Helper
         {
             return GraphicsFormatUtility.IsCompressedFormat(tex.graphicsFormat);
         }
-        
+
         public static bool IsCompressedFormat(TextureFormat format, bool isLinear)
         {
             return GraphicsFormatUtility.IsCompressedFormat(GraphicsFormatUtility.GetGraphicsFormat(format, isLinear));
         }
 
-        public static void CompressTexture(Texture2D tex, TextureFormat format, int quality = 100)
+        public static Texture2D CloneTexture(Texture2D tex)
+        {
+            var dst = new Texture2D(tex.width, tex.height, tex.format, tex.mipmapCount > 0, IsLinearFormat(tex));
+            Graphics.CopyTexture(tex, dst);
+            dst.Apply(false);
+
+            return dst;
+        }
+
+        public static Texture2D CompressTexture(Texture2D tex, TextureFormat format, TextureCompressionQuality quality = TextureCompressionQuality.Normal)
         {
 #if UNITY_EDITOR
             EditorUtility.CompressTexture(tex, format, quality);
             tex.Apply(false);
 #endif
+
+            return tex;
         }
-        
+
+        public static Texture2D UnCompressTexture(Texture2D tex)
+        {
+            if (!IsCompressedFormat(tex))
+            {
+                return tex;
+            }
+
+            // tex = CloneTexture(tex);
+            // tex.Resize(tex.width, tex.height, TextureFormat.RGBA32, tex.mipmapCount > 0);
+
+            tex = ReadableClone(tex, tex.format);
+            var mipmapCount = tex.mipmapCount;
+            var newTex = new Texture2D(tex.width, tex.height, TextureFormat.ARGB32, mipmapCount,
+                IsLinearFormat(tex));
+            for (int i = 0; i < tex.mipmapCount; i++)
+            {
+                newTex.SetPixels(tex.GetPixels(i), i);
+            }
+            newTex.Apply(false);
+
+            return newTex;
+
+            return tex;
+        }
+
         public static Texture2D ResizeTexture(Texture2D tex, int targetWidth, int targetHeight, TextureFormat format)
         {
             if (tex == null)
@@ -42,35 +77,41 @@ namespace WWFramework.Helper
             }
 
             var mipmapCount = tex.mipmapCount;
-            var result = new Texture2D(targetWidth, targetHeight, format, mipmapCount, IsLinearFormat(tex));
-            
-            try
-            {
-                tex = ReadableClone(tex, tex.format);
 
-                for (int mip = 0; mip < mipmapCount; mip++)
-                {
-                    var width = targetWidth / (2 ^ mip);
-                    var height = targetHeight / (2 ^ mip);
-                    var incX = 1f / width;
-                    var incY = 1f / height;
-                    var newColors = new Color[width * height];
-                    
-                    for (int i = 0; i < result.height; i++)
-                    {
-                        for (int j = 0; j < result.width; j++)
-                        {
-                            newColors[i * result.width + j] = tex.GetPixelBilinear(incX * j, incY * i, mip);
-                        }
-                    }
-                    result.SetPixels(newColors, mip);
-                }
-                
-                result.Apply(false);
-            }
-            catch (Exception e)
+            var tempFormat = format;
+            var isCompressedFormat = IsCompressedFormat(format, IsLinearFormat(tex));
+            if (isCompressedFormat)
             {
-                result = tex;
+                tempFormat = TextureFormat.ARGB32;
+            }
+            var result = new Texture2D(targetWidth, targetHeight, tempFormat, mipmapCount > 0, IsLinearFormat(tex));
+
+            tex = ReadableClone(tex, tex.format);
+
+            for (int mip = 0; mip < 1; mip++)
+            {
+                var width = targetWidth >> mip;
+                var height = targetHeight >> mip;
+                var incX = 1f / width;
+                var incY = 1f / height;
+                var newColors = new Color[width * height];
+
+                for (int i = 0; i < result.height; i++)
+                {
+                    for (int j = 0; j < result.width; j++)
+                    {
+                        newColors[i * result.width + j] = tex.GetPixelBilinear(incX * j, incY * i, mip);
+                    }
+                }
+
+                result.SetPixels(newColors, mip);
+            }
+
+            result.Apply(true);
+
+            if (isCompressedFormat)
+            {
+                result = CompressTexture(result, format);
             }
 
             return result;
@@ -94,7 +135,7 @@ namespace WWFramework.Helper
             readableText.Apply();
             RenderTexture.active = previous;
             RenderTexture.ReleaseTemporary(renderTex);
-            
+
             return readableText;
         }
 
@@ -129,22 +170,23 @@ namespace WWFramework.Helper
                     if (IsCompressedFormat(format, IsLinearFormat(tex)))
                     {
                         tex = UnCompressedClone(tex);
-                        CompressTexture(tex, format);
+                        tex = CompressTexture(tex, format);
 
                         newTex = tex;
                     }
                     else
                     {
                         newTex = new Texture2D(tex.width, tex.height, format, tex.mipmapCount, IsLinearFormat(tex));
-                        
+
                         for (int mip = 0; mip < tex.mipmapCount; mip++)
                         {
                             newTex.SetPixels(tex.GetPixels(mip), mip);
                         }
                     }
                 }
+
                 newTex.Apply(false);
-                
+
                 return newTex;
             }
 
@@ -155,19 +197,9 @@ namespace WWFramework.Helper
         {
             if (IsCompressedFormat(tex))
             {
-                tex = ReadableClone(tex, tex.format);
-
-                var mipmapCount = tex.mipmapCount;
-                var newTex = new Texture2D(tex.width, tex.height, TextureFormat.ARGB32, mipmapCount, IsLinearFormat(tex));
-                for (int i = 0; i < tex.mipmapCount; i++)
-                {
-                    newTex.SetPixels(tex.GetPixels(i), i);
-                }
-                newTex.Apply(false);
-
-                return newTex;
+                return UnCompressTexture(tex);
             }
-            
+
             return tex;
         }
 
@@ -189,14 +221,15 @@ namespace WWFramework.Helper
         }
 
 
-        public static Texture2D LimitingTextureSize(Texture2D tex, int limitedWidth, int limitedHeight, TextureFormat format)
+        public static Texture2D LimitingTextureSize(Texture2D tex, int limitedWidth, int limitedHeight,
+            TextureFormat format)
         {
             if (tex.width > limitedWidth || tex.height > limitedHeight)
             {
                 var widthScale = 1f * limitedWidth / tex.width;
                 var heightScale = 1f * limitedHeight / tex.height;
                 var scale = Mathf.Min(widthScale, heightScale);
-                return ResizeTexture(tex, (int)(tex.width * scale), (int)(tex.height * scale), format);
+                return ResizeTexture(tex, (int) (tex.width * scale), (int) (tex.height * scale), format);
             }
             else
             {
@@ -294,7 +327,8 @@ namespace WWFramework.Helper
             mipMapTex.Apply();
             var pixels = mipMapTex.GetPixels(mipLevel);
 
-            var result = new Texture2D(source.width / (int)Mathf.Pow(2, mipLevel), source.height / (int)Mathf.Pow(2, mipLevel), source.format, false);
+            var result = new Texture2D(source.width / (int) Mathf.Pow(2, mipLevel),
+                source.height / (int) Mathf.Pow(2, mipLevel), source.format, false);
             result.SetPixels(pixels);
             result.Apply();
 
@@ -308,7 +342,7 @@ namespace WWFramework.Helper
             var texWith = size * 4;
             var texHeight = size * 3;
             var tex = new Texture2D(texWith, texHeight, TextureFormat.RGBAHalf, false, false);
-            
+
             tex.SetPixels(size, 0, size, size, GetPixels(cubemap, CubemapFace.NegativeY, size, size));
             tex.SetPixels(0, size, size, size, GetPixels(cubemap, CubemapFace.NegativeX, size, size));
             tex.SetPixels(size, size, size, size, GetPixels(cubemap, CubemapFace.PositiveZ, size, size));
@@ -319,8 +353,8 @@ namespace WWFramework.Helper
 
             return tex;
         }
-        
-        
+
+
         /// <summary>
         /// 翻转的
         /// </summary>
@@ -331,14 +365,15 @@ namespace WWFramework.Helper
         /// <returns></returns>
         public static Color[] GetPixels(Cubemap cubemap, CubemapFace face, int width, int height)
         {
-            var colors = new Color[width*height];
+            var colors = new Color[width * height];
             for (int i = 0; i < height; i++)
             {
                 for (int j = 0; j < width; j++)
                 {
-                    colors[i*height+j] = cubemap.GetPixel(face,j, height - i);
+                    colors[i * height + j] = cubemap.GetPixel(face, j, height - i);
                 }
             }
+
             return colors;
         }
     }

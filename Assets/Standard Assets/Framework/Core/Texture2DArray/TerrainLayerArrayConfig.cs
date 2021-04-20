@@ -15,7 +15,7 @@ namespace WWFramework.Core
     {
         public bool UseFirstTextureSettings = false;
 
-        public List<TerrainLayer> Layers;
+        public List<TerrainLayer> Layers = new List<TerrainLayer>();
 
         public Texture2DArrayConfig DiffuseArrayConfig;
         public Texture2DArrayConfig NormalArrayConfig;
@@ -61,17 +61,7 @@ namespace WWFramework.Core
 
         private static void AddTextureToConfig(Texture2DArrayConfig config, Texture2D tex)
         {
-            if (tex == null)
-            {
-                return;
-            }
-
-            if (config.Textures.Contains(tex))
-            {
-                return;
-            }
-
-            config.Textures.Add(tex);
+            config.AddTexture(tex);
         }
 
         public static void GenerateConfig(TerrainLayerArrayConfig config)

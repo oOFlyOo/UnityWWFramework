@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using WWFramework.Helper;
 using WWFramework.UI;
@@ -17,11 +18,47 @@ namespace WWFramework.Core
         public bool IsLinear = false;
         public bool UseFirstTextureSettings = false;
     
-        public List<Texture2D> Textures;
+        public List<Texture2D> Textures = new List<Texture2D>();
         public Texture2DArray TexArray;
         
         
         #if UNITY_EDITOR
+        private Texture2D CheckTexture(Texture2D tex)
+        {
+            return tex != null ? tex : Texture2D.blackTexture;
+        }
+
+        public Texture2D FirstTexture()
+        {
+            var texture = Textures.FirstOrDefault(tex => tex != Texture2D.blackTexture);
+
+            return texture ?? Texture2D.blackTexture;
+        }
+        
+        public int IndexOfTexture(Texture2D tex)
+        {
+            // tex = CheckTexture(tex);
+
+            return Textures.IndexOf(tex);
+        }
+
+        public void AddTexture(Texture2D tex)
+        {
+            // tex = CheckTexture(tex);
+            if (tex == null)
+            {
+                return;
+            }
+
+            if (Textures.Contains(tex))
+            {
+                return;
+            }
+            
+            Textures.Add(tex);
+        }
+        
+        
         [ButtonProperty("Generate")]
         public string GenerateMethod = "生成Array";
         
@@ -45,7 +82,7 @@ namespace WWFramework.Core
                 return;
             }
 
-            var firstTex = texs[0];
+            var firstTex = config.FirstTexture();
             var format = config.UseFirstTextureSettings ? firstTex.format : config.Format;
             var isLinear = config.UseFirstTextureSettings ? TextureHelper.IsLinearFormat(firstTex) : config.IsLinear;
             var texArray = new Texture2DArray(firstTex.width, firstTex.height, texs.Count, format,

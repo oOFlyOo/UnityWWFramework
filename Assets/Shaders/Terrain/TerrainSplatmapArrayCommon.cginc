@@ -36,9 +36,12 @@ CONTROL_UNITY_DECLARE_TEX2D_NOSAMPLER(_Control_3);
 UNITY_DECLARE_TEX2DARRAY(_DiffuseArray);
 UNITY_DECLARE_TEX2DARRAY(_NormalArray);
 
-float _DiffuseIndexes[16];
-float _NoralMalIndexes[16];
-float4 _Splats_ST[16];
+#define TEXCOUNT 16
+
+float _DiffuseIndexes[TEXCOUNT];
+float _NoralMalIndexes[TEXCOUNT];
+float4 _Splats_ST[TEXCOUNT];
+float _NormalScales[TEXCOUNT];
 
 
 #if defined(UNITY_INSTANCING_ENABLED) && !defined(SHADER_API_D3D11_9X)
@@ -132,7 +135,7 @@ void SplatmapVert(inout appdata_full v, out Input data)
     float4 splat_##index = _Splats_ST[index]; \
     float2 uvSplat_##index = coord * splat_##index.xy + splat_##index.zw; \
     diffuse += splat_control_##controlIndex.##channel * UNITY_SAMPLE_TEX2DARRAY(_DiffuseArray, float3(uvSplat_##index, diffuse_index_##index)) * half4(1.0, 1.0, 1.0, defaultAlpha.##channel) * saturate(diffuse_index_##index + 1); \
-    normal += UnpackNormalWithScale(UNITY_SAMPLE_TEX2DARRAY(_NormalArray, float3(uvSplat_##index, normal_index_##index)), 1) * splat_control_##controlIndex.##channel * saturate(diffuse_index_##index + 1);
+    normal += UnpackNormalWithScale(UNITY_SAMPLE_TEX2DARRAY(_NormalArray, float3(uvSplat_##index, normal_index_##index)), _NormalScales[index]) * splat_control_##controlIndex.##channel * saturate(diffuse_index_##index + 1);
 
 #define SplatmapMixFour(diffuse, normal, controlIndex, coord) \
     SplatmapControl(controlIndex, coord); \

@@ -15,6 +15,7 @@ namespace WWFramework.Core
         public List<float> DiffuseIndexes = new List<float>();
         public List<float> NormalIndexes = new List<float>();
         public List<Vector4> Tillings = new List<Vector4>();
+        public List<float> NormalScales = new List<float>();
 
         private MaterialPropertyBlock _block;
 
@@ -51,6 +52,7 @@ namespace WWFramework.Core
             _block.SetFloatArray("_DiffuseIndexes", DiffuseIndexes);
             _block.SetFloatArray("_NoralMalIndexes", NormalIndexes);
             _block.SetVectorArray("_Splats_ST", Tillings);
+            _block.SetFloatArray("_NormalScales", NormalScales);
 
             var terrain = GetComponent<Terrain>();
             terrain.SetSplatMaterialPropertyBlock(_block);
@@ -70,6 +72,7 @@ namespace WWFramework.Core
             DiffuseIndexes.Clear();
             NormalIndexes.Clear();
             Tillings.Clear();
+            NormalScales.Clear();
             for (int i = 0; i < terrain.terrainData.terrainLayers.Length; i++)
             {
                 var layer = terrain.terrainData.terrainLayers[i];
@@ -77,6 +80,7 @@ namespace WWFramework.Core
                 NormalIndexes.Add(config.NormalArrayConfig.IndexOfTexture(layer.normalMapTexture));
                 var tilling = new Vector4(terrain.terrainData.size.x / layer.tileSize.x, terrain.terrainData.size.z / layer.tileSize.y, layer.tileOffset.x / layer.tileSize.x, layer.tileOffset.y/ layer.tileSize.y);
                 Tillings.Add(tilling);
+                NormalScales.Add(layer.normalScale);
             }
         }
     }

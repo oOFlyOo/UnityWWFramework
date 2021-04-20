@@ -76,8 +76,8 @@ namespace WWFramework.Core
             for (int i = 0; i < terrain.terrainData.terrainLayers.Length; i++)
             {
                 var layer = terrain.terrainData.terrainLayers[i];
-                DiffuseIndexes.Add(config.DiffuseArrayConfig.IndexOfTexture(layer.diffuseTexture));
-                NormalIndexes.Add(config.NormalArrayConfig.IndexOfTexture(layer.normalMapTexture));
+                DiffuseIndexes.Add(config.DiffuseArrayConfig.IndexOfTexture(layer.diffuseTexture) + 1);
+                NormalIndexes.Add(config.NormalArrayConfig.IndexOfTexture(layer.normalMapTexture) + 1);
                 var tilling = new Vector4(terrain.terrainData.size.x / layer.tileSize.x, terrain.terrainData.size.z / layer.tileSize.y, layer.tileOffset.x / layer.tileSize.x, layer.tileOffset.y/ layer.tileSize.y);
                 Tillings.Add(tilling);
                 NormalScales.Add(layer.normalScale);

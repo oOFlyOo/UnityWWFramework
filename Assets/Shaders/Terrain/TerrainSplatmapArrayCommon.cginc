@@ -130,12 +130,12 @@ void SplatmapVert(inout appdata_full v, out Input data)
     // splat_control_##index /= (weight_##index + 1e-3f); \
 
 #define SplatmapMixOne(diffuse, normal, index, controlIndex, channel, coord) \
-    fixed diffuse_index_##index = _DiffuseIndexes[index]; \
-    fixed normal_index_##index = _NoralMalIndexes[index]; \
+    fixed diffuse_index_##index = _DiffuseIndexes[index] - 1; \
+    fixed normal_index_##index = _NoralMalIndexes[index] - 1; \
     float4 splat_##index = _Splats_ST[index]; \
     float2 uvSplat_##index = coord * splat_##index.xy + splat_##index.zw; \
     diffuse += splat_control_##controlIndex.##channel * UNITY_SAMPLE_TEX2DARRAY(_DiffuseArray, float3(uvSplat_##index, diffuse_index_##index)) * half4(1.0, 1.0, 1.0, defaultAlpha.##channel) * saturate(diffuse_index_##index + 1); \
-    normal += UnpackNormalWithScale(UNITY_SAMPLE_TEX2DARRAY(_NormalArray, float3(uvSplat_##index, normal_index_##index)), _NormalScales[index]) * splat_control_##controlIndex.##channel * saturate(diffuse_index_##index + 1);
+    normal += UnpackNormalWithScale(UNITY_SAMPLE_TEX2DARRAY(_NormalArray, float3(uvSplat_##index, normal_index_##index)), _NormalScales[index]) * splat_control_##controlIndex.##channel * saturate(normal_index_##index + 1);
 
 #define SplatmapMixFour(diffuse, normal, controlIndex, coord) \
     SplatmapControl(controlIndex, coord); \

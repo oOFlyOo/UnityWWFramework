@@ -85,6 +85,7 @@ namespace WWFramework.Core
             config.DiffuseArrayConfig.Generate();
             config.NormalArrayConfig.Generate();
 
+        	EditorUtility.SetDirty(config);
             AssetDatabase.SaveAssets();
         }
 #endif

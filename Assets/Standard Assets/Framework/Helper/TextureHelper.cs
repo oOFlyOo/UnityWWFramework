@@ -34,7 +34,7 @@ namespace WWFramework.Helper
             return dst;
         }
 
-        public static Texture2D CompressTexture(Texture2D tex, TextureFormat format, TextureCompressionQuality quality = TextureCompressionQuality.Normal)
+        public static Texture2D CompressTexture(Texture2D tex, TextureFormat format, int quality = 0)
         {
 #if UNITY_EDITOR
             EditorUtility.CompressTexture(tex, format, quality);

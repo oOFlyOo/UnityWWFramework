@@ -7,6 +7,7 @@ using WWFramework.UI;
 #if UNITY_EDITOR
 using System.IO;
 using UnityEditor;
+
 #endif
 
 namespace WWFramework.Core
@@ -17,34 +18,25 @@ namespace WWFramework.Core
         public TextureFormat Format = TextureFormat.ASTC_4x4;
         public bool IsLinear = false;
         public bool UseFirstTextureSettings = false;
-    
+
         public List<Texture2D> Textures = new List<Texture2D>();
         public Texture2DArray TexArray;
-        
-        
-        #if UNITY_EDITOR
-        private Texture2D CheckTexture(Texture2D tex)
+
+        public int IndexOfTexture(Texture2D tex)
         {
-            return tex != null ? tex : Texture2D.blackTexture;
+            return Textures.IndexOf(tex);
         }
 
+#if UNITY_EDITOR
         public Texture2D FirstTexture()
         {
             var texture = Textures.FirstOrDefault(tex => tex != Texture2D.blackTexture);
 
             return texture ?? Texture2D.blackTexture;
         }
-        
-        public int IndexOfTexture(Texture2D tex)
-        {
-            // tex = CheckTexture(tex);
-
-            return Textures.IndexOf(tex);
-        }
 
         public void AddTexture(Texture2D tex)
         {
-            // tex = CheckTexture(tex);
             if (tex == null)
             {
                 return;
@@ -54,19 +46,18 @@ namespace WWFramework.Core
             {
                 return;
             }
-            
+
             Textures.Add(tex);
         }
-        
-        
-        [ButtonProperty("Generate")]
-        public string GenerateMethod = "生成Array";
-        
+
+
+        [ButtonProperty("Generate")] public string GenerateMethod = "生成Array";
+
         public void Generate()
         {
             GenerateConfig(this);
         }
-        
+
         public static string GetTexture2DArrayPath(Texture2DArrayConfig config)
         {
             var path = AssetDatabase.GetAssetPath(config);
@@ -95,10 +86,10 @@ namespace WWFramework.Core
                 {
                     continue;
                 }
-                
+
                 TextureHelper.CopyToTexture2DArray(tex, texArray, i);
             }
-            
+
             texArray.Apply(false);
 
             var configArr = config.TexArray;
@@ -110,7 +101,7 @@ namespace WWFramework.Core
             if (configArr == null)
             {
                 config.TexArray = texArray;
-                config.TexArray.name = config.name; 
+                config.TexArray.name = config.name;
                 AssetDatabase.CreateAsset(texArray, GetTexture2DArrayPath(config));
             }
             else
@@ -119,8 +110,9 @@ namespace WWFramework.Core
                 EditorUtility.CopySerialized(texArray, config.TexArray);
             }
 
+            EditorUtility.SetDirty(config);
             AssetDatabase.SaveAssets();
         }
-        #endif
+#endif
     }
 }

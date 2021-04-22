@@ -49,10 +49,10 @@ namespace WWFramework.Core
             _block.SetTexture("_DiffuseArray", DiffuseArray);
             _block.SetTexture("_NormalArray", NormalArray);
 
-            _block.SetFloatArray("_DiffuseIndexes", DiffuseIndexes);
-            _block.SetFloatArray("_NoralMalIndexes", NormalIndexes);
-            _block.SetVectorArray("_Splats_ST", Tillings);
-            _block.SetFloatArray("_NormalScales", NormalScales);
+        _block.SetFloatArray("_DiffuseIndexes", DiffuseIndexes);
+        _block.SetFloatArray("_NormalIndexes", NormalIndexes);
+        _block.SetVectorArray("_Splats_ST", Tillings);
+        _block.SetFloatArray("_NormalScales", NormalScales);
 
             var terrain = GetComponent<Terrain>();
             terrain.SetSplatMaterialPropertyBlock(_block);

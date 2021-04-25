@@ -46,8 +46,8 @@ namespace WWFramework.Core
                 _block.SetTexture($"_Control_{i}", control);
             }
             
-            _block.SetTexture("_DiffuseArray", DiffuseArray);
-            _block.SetTexture("_NormalArray", NormalArray);
+        _block.SetTexture("_DiffuseArray", DiffuseArray);
+        _block.SetTexture("_NormalArray", NormalArray);
 
         _block.SetFloatArray("_DiffuseIndexes", DiffuseIndexes);
         _block.SetFloatArray("_NormalIndexes", NormalIndexes);

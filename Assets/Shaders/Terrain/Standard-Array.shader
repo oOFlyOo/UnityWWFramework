@@ -1,12 +1,16 @@
 // Unity built-in shader source. Copyright (c) 2016 Unity Technologies. MIT license (see license.txt)
 
-Shader "WWFramework/Terrain/Standard" {
+Shader "WWFramework/Terrain/StandardArray" {
     Properties {
         // used in fallback on old cards & base map
         [HideInInspector] _MainTex ("BaseMap (RGB)", 2D) = "white" {}
         [HideInInspector] _Color ("Main Color", Color) = (1,1,1,1)
         [HideInInspector] _TerrainHolesTexture("Holes Map (RGB)", 2D) = "white" {}
-        [HideInInspector] _ControlOffset ("Control Offset", Vector) = (1, 1, 0, 0) 
+        
+        [HideInInspector] _Control_0("Control", 2D) = "black" {}
+        [HideInInspector] _Control_1("Control", 2D) = "black" {}
+        [HideInInspector] _Control_2("Control", 2D) = "black" {}
+        [HideInInspector] _Control_3("Control", 2D) = "black" {}
     }
 
     SubShader {
@@ -28,7 +32,7 @@ Shader "WWFramework/Terrain/Standard" {
         #define TERRAIN_STANDARD_SHADER
         #define TERRAIN_INSTANCED_PERPIXEL_NORMAL
         #define TERRAIN_SURFACE_OUTPUT SurfaceOutputStandard
-        #include "TerrainSplatmapMeshCommon.cginc"
+        #include "TerrainSplatmapArrayCommon.cginc"
 
         half _Metallic0;
         half _Metallic1;
@@ -49,10 +53,18 @@ Shader "WWFramework/Terrain/Standard" {
             o.Albedo = mixedDiffuse.rgb;
             o.Alpha = weight;
             o.Smoothness = mixedDiffuse.a;
+            // o.Metallic = dot(splat_control, half4(_Metallic0, _Metallic1, _Metallic2, _Metallic3));
             o.Metallic = dot(splat_control, half4(_Metallic0, _Metallic1, _Metallic2, _Metallic3));
         }
         ENDCG
+
+        UsePass "Hidden/Nature/Terrain/Utilities/PICKING"
+        UsePass "Hidden/Nature/Terrain/Utilities/SELECTION"
     }
 
-    Fallback "Nature/Terrain/Diffuse"
+//    Dependency "AddPassShader"    = "Hidden/TerrainEngine/Splatmap/Standard-AddPass"
+//    Dependency "BaseMapShader"    = "Hidden/TerrainEngine/Splatmap/Standard-Base"
+//    Dependency "BaseMapGenShader" = "Hidden/TerrainEngine/Splatmap/Standard-BaseGen"
+//
+//    Fallback "Nature/Terrain/Diffuse"
 }

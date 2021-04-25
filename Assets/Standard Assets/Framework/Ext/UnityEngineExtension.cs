@@ -55,6 +55,18 @@ namespace WWFramework.Extension
 
             return false;
         }
+        
+        public static void CopyTransform(this GameObject dst, GameObject src)
+        {
+            dst.transform.CopyTransform(src.transform);
+        }
+
+        public static void CopyTransform(this Transform dst, Transform src)
+        {
+            dst.localPosition = src.localPosition;
+            dst.localRotation = src.localRotation;
+            dst.localScale = src.localScale;
+        }
 
         /// <summary>
         /// 快速判空

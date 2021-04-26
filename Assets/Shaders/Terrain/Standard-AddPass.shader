@@ -1,30 +1,28 @@
 // Unity built-in shader source. Copyright (c) 2016 Unity Technologies. MIT license (see license.txt)
 
-Shader "WWFramework/Terrain/Standard" {
-    Properties {
-        // used in fallback on old cards & base map
-        [HideInInspector] _MainTex ("BaseMap (RGB)", 2D) = "white" {}
-        [HideInInspector] _Color ("Main Color", Color) = (1,1,1,1)
+Shader "WWFramework/Terrain/Standard-AddPass" {
+    Properties{
         [HideInInspector] _TerrainHolesTexture("Holes Map (RGB)", 2D) = "white" {}
         [HideInInspector] _ControlOffset ("Control Offset", Vector) = (1, 1, 0, 0) 
     }
-
     SubShader {
         Tags {
-            "Queue" = "Geometry-100"
+            "Queue" = "Geometry-99"
+            "IgnoreProjector"="True"
             "RenderType" = "Opaque"
         }
 
         CGPROGRAM
-        #pragma surface surf Standard vertex:SplatmapVert finalcolor:SplatmapFinalColor finalgbuffer:SplatmapFinalGBuffer addshadow fullforwardshadows
+        #pragma surface surf Standard decal:add vertex:SplatmapVert finalcolor:SplatmapFinalColor finalgbuffer:SplatmapFinalGBuffer fullforwardshadows nometa
         #pragma instancing_options assumeuniformscaling nomatrices nolightprobe nolightmap forwardadd
-        #pragma multi_compile_fog // needed because finalcolor oppresses fog code generation.
+        #pragma multi_compile_fog
         #pragma target 3.0
         #include "UnityPBSLighting.cginc"
 
         #pragma multi_compile_local __ _ALPHATEST_ON
         #pragma multi_compile_local __ _NORMALMAP
 
+        #define TERRAIN_SPLAT_ADDPASS
         #define TERRAIN_STANDARD_SHADER
         #define TERRAIN_INSTANCED_PERPIXEL_NORMAL
         #define TERRAIN_SURFACE_OUTPUT SurfaceOutputStandard
@@ -54,5 +52,5 @@ Shader "WWFramework/Terrain/Standard" {
         ENDCG
     }
 
-//    Fallback "Nature/Terrain/Diffuse"
+//    Fallback "Hidden/TerrainEngine/Splatmap/Diffuse-AddPass"
 }

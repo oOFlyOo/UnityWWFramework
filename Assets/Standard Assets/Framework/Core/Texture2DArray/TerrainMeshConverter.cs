@@ -15,17 +15,11 @@ namespace WWFramework.Core
         public List<Texture2D> Normals= new List<Texture2D>();
         public List<float> NormalScales = new List<float>();
 
-        private MaterialPropertyBlock _block;
+        private List<MaterialPropertyBlock> _blocks;
         
-        private void InitParams()
-        {
-            _block = _block ?? new MaterialPropertyBlock();
-        }
 
         private void Start()
         {
-            InitParams();
-            
             Convert();
         }
         
@@ -35,24 +29,32 @@ namespace WWFramework.Core
             {
                 return;
             }
-            
-            _block.Clear();
-            
-            _block.SetTexture("_Control", Controls.FirstOrDefault());
-            _block.SetVector("_Control_TexelSize", ControlTexelSizes.FirstOrDefault());
-            _block.SetVector("_ControlOffset", ControlOffset);
 
-            for (int i = 0; i < Mathf.Min(Diffuses.Count, 4); i++)
-            {
-                _block.SetTexture($"_Splat{i}", Diffuses[i]);
-                _block.SetVector($"_Splat{i}_ST", SplatTillings[i]);
-                _block.SetTexture($"_Normal{i}", Normals[i]);
-                _block.SetFloat($"_NormalScale{i}", NormalScales[i]);
-            }
-            
+            _blocks = new List<MaterialPropertyBlock>(Controls.Count);
             var renderer = GetComponent<MeshRenderer>();
-            renderer.SetPropertyBlock(_block);
-            renderer.sharedMaterial.EnableKeyword("_NORMALMAP");
+
+            for (int bI = 0; bI < Controls.Count; bI++)
+            {
+                var block = new MaterialPropertyBlock();
+                _blocks.Add(block);
+                
+                block.SetTexture("_Control", Controls[bI]);
+                block.SetVector("_Control_TexelSize", ControlTexelSizes[bI]);
+                // block.SetVector("_ControlOffset", ControlOffset);
+
+                var startI = bI * 4;
+                var endI = Mathf.Min(startI + 4, Diffuses.Count);
+                for (int i = startI; i < endI; i++)
+                {
+                    block.SetTexture($"_Splat{i - startI}", Diffuses[i]);
+                    block.SetVector($"_Splat{i - startI}_ST", SplatTillings[i]);
+                    block.SetTexture($"_Normal{i - startI}", Normals[i]);
+                    block.SetFloat($"_NormalScale{i - startI}", NormalScales[i]);
+                }
+            
+                renderer.SetPropertyBlock(block, bI);
+                // renderer.sharedMaterial.EnableKeyword("_NORMALMAP");
+            }
         }
 
         public void InitConverter(Terrain terrain, List<Texture2D> controls, int tileGridNum, int widthIndex, int heightIndex)

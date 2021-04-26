@@ -39,6 +39,13 @@ namespace WWFramework.Util
                 _vertices[index] = Vector3.Scale(new Vector3(i, height, j), meshScale);
                 _uvs[index] = new Vector2(i / (_width - 1f), j / (_height - 1f));
             }
+            
+            public void AddVertex(int i, int j, float height, Vector3 meshScale, Vector2 uv)
+            {
+                var index = i + j * _width;
+                _vertices[index] = Vector3.Scale(new Vector3(i, height, j), meshScale);
+                _uvs[index] = uv;
+            }
 
             public void AddTriangle(int a, int b, int c)
             {
@@ -118,7 +125,8 @@ namespace WWFramework.Util
                             // 共用一条边
                             var widthIndex = chunkI * (width - 1) + i;
                             var heightIndex = chunkJ * (height - 1) + j;
-                            meshData.AddVertex(i, j, heights[heightIndex, widthIndex], meshScale);
+                            // meshData.AddVertex(i, j, heights[heightIndex, widthIndex], meshScale);
+                            meshData.AddVertex(i, j, heights[heightIndex, widthIndex], meshScale, new Vector2(widthIndex / (maxWidth - 1f), heightIndex / (maxHeight - 1f)));
                         }
                     }
 

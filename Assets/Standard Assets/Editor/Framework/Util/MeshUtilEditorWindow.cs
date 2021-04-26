@@ -4,6 +4,7 @@ using System.IO;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.Rendering;
 using WWFramework.Core;
 using WWFramework.Extension;
 using WWFramework.UI.Editor;
@@ -16,6 +17,7 @@ namespace WWFramework.Util.Editor
         private Material _addMat;
         private int _lod;
         private int _splitCount;
+        private IndexFormat _indexFormat = IndexFormat.UInt16;
         
         [MenuItem("WWFramework/MeshUtil/Window")]
         private static MeshUtilEditorWindow GetWindow()
@@ -28,10 +30,11 @@ namespace WWFramework.Util.Editor
             _mat = EditorUIHelper.ObjectField<Material>(_mat, "替换材质球");
             _addMat = EditorUIHelper.ObjectField<Material>(_addMat, "替换材质球");
             _lod = EditorUIHelper.IntSlider("LOD", _lod, 0 , 5);
-            _splitCount = EditorUIHelper.IntSlider("分割块数，4^n", _splitCount, 0, 3);
+            _splitCount = EditorUIHelper.IntSlider("分割块数，4^n", _splitCount, 0, 5);
+            _indexFormat = EditorUIHelper.EnumPopup<IndexFormat>(_indexFormat);
             
             EditorUIHelper.Space();
-            EditorUIHelper.LabelField("1025的高度图设置，得分割3次才能满足顶点数限制");
+            EditorUIHelper.LabelField("使用 UInt16，1025的高度图设置，得分割3次才能满足顶点数限制");
             
             EditorUIHelper.Space();
             EditorUIHelper.Button("ExportSplatmaps", ExportSplatmaps);

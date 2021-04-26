@@ -25,6 +25,8 @@ namespace WWFramework.Development
                 Application.targetFrameRate = -1;
             }
 
+            Screen.sleepTimeout = SleepTimeout.NeverSleep;
+
             _style = new GUIStyle();
             _style.normal.background = null;
             _style.normal.textColor = Color.yellow;

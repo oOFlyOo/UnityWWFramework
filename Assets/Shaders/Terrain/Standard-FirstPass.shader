@@ -6,7 +6,7 @@ Shader "WWFramework/Terrain/Standard" {
         [HideInInspector] _MainTex ("BaseMap (RGB)", 2D) = "white" {}
         [HideInInspector] _Color ("Main Color", Color) = (1,1,1,1)
         [HideInInspector] _TerrainHolesTexture("Holes Map (RGB)", 2D) = "white" {}
-        [HideInInspector] _ControlOffset ("Control Offset", Vector) = (1, 1, 0, 0) 
+//        [HideInInspector] _ControlOffset ("Control Offset", Vector) = (1, 1, 0, 0) 
     }
 
     SubShader {

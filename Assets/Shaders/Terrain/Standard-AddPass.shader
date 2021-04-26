@@ -3,7 +3,6 @@
 Shader "WWFramework/Terrain/Standard-AddPass" {
     Properties{
         [HideInInspector] _TerrainHolesTexture("Holes Map (RGB)", 2D) = "white" {}
-        [HideInInspector] _ControlOffset ("Control Offset", Vector) = (1, 1, 0, 0) 
     }
     SubShader {
         Tags {

@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace WWFramework.Util
 {
@@ -56,9 +57,10 @@ namespace WWFramework.Util
                 _triangleIndex += 3;
             }
 
-            public Mesh CreateMesh()
+            public Mesh CreateMesh(IndexFormat format)
             {
                 var mesh = new Mesh();
+                mesh.indexFormat = format;
 
                 mesh.vertices = _vertices;
                 mesh.uv = _uvs;
@@ -77,11 +79,11 @@ namespace WWFramework.Util
         /// <param name="data"></param>
         /// <param name="lod"></param>
         /// <returns></returns>
-        private static int GetTerrainResolution(TerrainData data, int lod, int splitCount)
+        private static int GetTerrainResolution(TerrainData data, IndexFormat format, int lod, int splitCount)
         {
             var resolution = data.heightmapResolution;
             resolution = GetResolutionLod(resolution,splitCount);
-            if (resolution > MaxResolution)
+            if (format == IndexFormat.UInt16 && resolution > MaxResolution)
             {
                 resolution = MaxResolution;
             }
@@ -94,10 +96,10 @@ namespace WWFramework.Util
             return ((resolution - ResolutionEdge) >> lod) + ResolutionEdge;
         }
         
-        public static List<Mesh> ConvertTerrain2Mesh(Terrain terrain, int splitCount = 0, int lod = 0)
+        public static List<Mesh> ConvertTerrain2Mesh(Terrain terrain, IndexFormat format, int splitCount = 0, int lod = 0)
         {
             var terrainData = terrain.terrainData;
-            var width = GetTerrainResolution(terrainData, lod, splitCount);
+            var width = GetTerrainResolution(terrainData, format, lod, splitCount);
             var height = width;
             var size = terrainData.size;
             
@@ -145,7 +147,7 @@ namespace WWFramework.Util
                         }
                     }
                     
-                    meshes.Add(meshData.CreateMesh());
+                    meshes.Add(meshData.CreateMesh(format));
                 }
             }
 

@@ -63,7 +63,7 @@ namespace WWFramework.Util.Editor
 
         private void ConvertTerrain2Mesh(Terrain terrain)
         {
-            var meshes = MeshUtil.ConvertTerrain2Mesh(terrain, _splitCount, _lod);
+            var meshes = MeshUtil.ConvertTerrain2Mesh(terrain, _indexFormat, _splitCount, _lod);
 
             var rootGo = new GameObject($"{terrain.name}_{_lod}");
             rootGo.CopyTransform(terrain.gameObject);
@@ -91,15 +91,20 @@ namespace WWFramework.Util.Editor
             }
         }
 
+        private void EnableKeyword(Material mat)
+        {
+            mat.EnableKeyword("_NORMALMAP");
+        }
+
         private void InitMeshRenderer(Terrain terrain, MeshRenderer renderer, int tileGridNum, int widthIndex, int heightIndex)
         {
             var splatCounts = terrain.terrainData.alphamapTextureCount;
             var mats = new List<Material>();
             mats.Add(_mat);
-            _mat.EnableKeyword("_NORMALMAP");
+            EnableKeyword(_mat);
             if (_addMat != null)
             {
-                _addMat.EnableKeyword("_NORMALMAP");
+                EnableKeyword(_addMat);
 
                 for (int i = 0; i < splatCounts - 1; i++)
                 {
@@ -183,6 +188,7 @@ namespace WWFramework.Util.Editor
             {
                 var path = GetSplatmapPath(terrain, index);
                 var importer = (TextureImporter) AssetImporter.GetAtPath(path);
+                importer.textureCompression = TextureImporterCompression.Uncompressed;
                 importer.sRGBTexture = false;
                 importer.mipmapEnabled = false;
                 importer.SaveAndReimport();

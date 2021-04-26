@@ -31,7 +31,6 @@ namespace WWFramework.Core
             }
 
             _blocks = new List<MaterialPropertyBlock>(Controls.Count);
-            var renderer = GetComponent<MeshRenderer>();
 
             for (int bI = 0; bI < Controls.Count; bI++)
             {
@@ -48,11 +47,15 @@ namespace WWFramework.Core
                 {
                     block.SetTexture($"_Splat{i - startI}", Diffuses[i]);
                     block.SetVector($"_Splat{i - startI}_ST", SplatTillings[i]);
-                    block.SetTexture($"_Normal{i - startI}", Normals[i]);
+                    block.SetTexture($"_Normal{i - startI}", Normals[i] ? Normals[i] : Texture2D.normalTexture);
                     block.SetFloat($"_NormalScale{i - startI}", NormalScales[i]);
                 }
-            
-                renderer.SetPropertyBlock(block, bI);
+
+                var renderers = GetComponentsInChildren<MeshRenderer>();
+                foreach (var renderer in renderers)
+                {
+                    renderer.SetPropertyBlock(block, bI);
+                }
                 // renderer.sharedMaterial.EnableKeyword("_NORMALMAP");
             }
         }
@@ -79,10 +82,10 @@ namespace WWFramework.Core
             NormalScales.Clear();
             foreach (var layer in data.terrainLayers)
             {
-                Diffuses.Add(layer.diffuseTexture ? layer.diffuseTexture : Texture2D.grayTexture);
+                Diffuses.Add(layer.diffuseTexture);
                 var tilling = new Vector4(data.size.x / layer.tileSize.x, data.size.z / layer.tileSize.y, layer.tileOffset.x / layer.tileSize.x, layer.tileOffset.y/ layer.tileSize.y);
                 SplatTillings.Add(tilling);
-                Normals.Add(layer.normalMapTexture ? layer.normalMapTexture : Texture2D.normalTexture);
+                Normals.Add(layer.normalMapTexture);
                 NormalScales.Add(layer.normalScale);
             }
         }

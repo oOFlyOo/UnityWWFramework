@@ -11,26 +11,25 @@ namespace WWFramework.Development
 #if UNITY_EDITOR
         private SceneView _sceneView;
 
+        private Camera _mainCamera;
+
         private void Awake()
         {
             _sceneView = SceneView.lastActiveSceneView;
+            _mainCamera = Camera.main;
         }
 
         private void LateUpdate()
         {
-            if (_sceneView != null)
+            if (_sceneView != null && _mainCamera != null)
             {
-                _sceneView.LookAt(transform.position, transform.rotation);
-            }
-        }
-
-        private void OnDestroy()
-        {
-            if (_sceneView != null)
-            {
-                _sceneView.LookAt(transform.position, transform.rotation, 5f);
-
-                _sceneView = null;
+                // _sceneView.LookAt(transform.position, transform.rotation);
+                
+                _sceneView.cameraSettings.nearClip = _mainCamera.nearClipPlane;
+                _sceneView.cameraSettings.fieldOfView = _mainCamera.fieldOfView;
+                _sceneView.pivot = _mainCamera.transform.position +
+                                   _mainCamera.transform.forward * _sceneView.cameraDistance;
+                _sceneView.rotation = _mainCamera.transform.rotation;
             }
         }
 #endif

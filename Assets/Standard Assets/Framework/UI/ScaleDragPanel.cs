@@ -1,34 +1,50 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.UI;
 
 namespace WWFramework.Uitl.UI
 {
-    public class ScaleScrollRect : ScrollRect
+    public class ScaleDragPanel: MonoBehaviour, IBeginDragHandler, IEndDragHandler, IDragHandler, IScrollHandler
     {
         private const float ScrollFactor = 1.5f;
 
         [SerializeField] 
+        private RectTransform _content;
+        [SerializeField] 
         private bool _debugMode = false;
         [SerializeField]
         private bool _scaleContent = true;
+        [SerializeField]
+        private bool _dragContent = true;
+
+        private RectTransform _cachePanel;
 
         /// <summary>
         /// 得到的是缩放的比例以及缩放的中心点
         /// </summary>
         public Action<float, Vector2> OnZoom;
 
+        /// <summary>
+        /// 根据UI的位置来拖动位置
+        /// </summary>
+        public Action<Vector2> OnUIDrag;
+
         private int _touchCount;
         private float _preDistance;
         private Vector2 _beginZoomPosition1;
         private Vector2 _beginZoomPosition2;
 
-        public override void OnScroll(PointerEventData data)
+        private Vector2 _lastDragPosition;
+        private bool _dragging;
+
+        private void Start()
         {
-            if (!IsActive())
+            _cachePanel = (RectTransform)transform;
+        }
+
+        public void OnScroll(PointerEventData data)
+        {
+            if (!isActiveAndEnabled)
                 return;
 
             // y值为1向上滚，否则向下滚
@@ -44,22 +60,39 @@ namespace WWFramework.Uitl.UI
             }
         }
 
-        public override void OnBeginDrag(PointerEventData eventData)
+        private bool IsDragButton(PointerEventData eventData)
         {
-            if (!IsActive())
+            return eventData.button == PointerEventData.InputButton.Left;
+        }
+
+        private Vector2 GetDragPoint(PointerEventData eventData)
+        {
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(_cachePanel, eventData.position, eventData.pressEventCamera, out Vector2 point);
+
+            return point;
+        }
+
+        public void OnBeginDrag(PointerEventData eventData)
+        {
+            if (!isActiveAndEnabled)
                 return;
 
             if (Input.touchCount > 1)
             {
                 return;
             }
+            
+            if (!IsDragButton(eventData))
+                return;
 
-            base.OnBeginDrag(eventData);
+            _dragging = true;
+
+            _lastDragPosition = GetDragPoint(eventData);
         }
 
-        public override void OnDrag(PointerEventData eventData)
+        public void OnDrag(PointerEventData eventData)
         {
-            if (!IsActive())
+            if (!isActiveAndEnabled)
                 return;
 
             if (Input.touchCount > 1)
@@ -70,11 +103,38 @@ namespace WWFramework.Uitl.UI
             else if (Input.touchCount == 1 && _touchCount > 1)
             {
                 _touchCount = Input.touchCount;
-                base.OnBeginDrag(eventData);
+                OnBeginDrag(eventData);
                 return;
             }
 
-            base.OnDrag(eventData);
+            if (!_dragging)
+            {
+                return;
+            }
+
+            if (!IsDragButton(eventData))
+            {
+                return;
+            }
+
+            var pos = GetDragPoint(eventData);
+            var deltaPos = pos - _lastDragPosition;
+            _lastDragPosition = pos;
+            
+            UIDrag(deltaPos);
+        }
+        
+        public void OnEndDrag(PointerEventData eventData)
+        {
+            // if (!isActiveAndEnabled)
+            // {
+            //     return;
+            // }
+            
+            if (!IsDragButton(eventData))
+                return;
+
+            _dragging = false;
         }
 
         private void Update()
@@ -105,11 +165,20 @@ namespace WWFramework.Uitl.UI
             }
         }
 
-        protected override void OnDestroy()
+        private void OnDestroy()
         {
             OnZoom = null;
+            OnUIDrag = null;
+        }
 
-            base.OnDestroy();
+        private void UIDrag(Vector2 offset)
+        {
+            if (_dragContent)
+            {
+                _content.anchoredPosition += offset;
+            }
+            
+            OnUIDrag?.Invoke(offset);
         }
 
         private void Zoom(float scale, Vector2 pos)
@@ -121,15 +190,15 @@ namespace WWFramework.Uitl.UI
             
             if (_scaleContent)
             {
-                if (RectTransformUtility.ScreenPointToLocalPointInRectangle(content, pos, content.GetComponentInParent<Canvas>().worldCamera, out Vector2 contentPoint))
+                if (RectTransformUtility.ScreenPointToLocalPointInRectangle(_content, pos, _content.GetComponentInParent<Canvas>().worldCamera, out Vector2 contentPoint))
                 {
-                    var originScale = content.localScale;
+                    var originScale = _content.localScale;
                     var targetScale = originScale * scale;
                     
                     var deltaPos = contentPoint * originScale - contentPoint * targetScale;
                     
-                    content.anchoredPosition = content.anchoredPosition + deltaPos;
-                    content.localScale = targetScale;
+                    _content.anchoredPosition = _content.anchoredPosition + deltaPos;
+                    _content.localScale = targetScale;
                 }
             }
             

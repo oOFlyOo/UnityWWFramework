@@ -173,6 +173,11 @@ namespace WWFramework.Uitl.UI
 
         private void UIDrag(Vector2 offset)
         {
+            if (_debugMode)
+            {
+                Debug.Log($"Drag:{offset}");
+            }
+            
             if (_dragContent)
             {
                 _content.anchoredPosition += offset;
